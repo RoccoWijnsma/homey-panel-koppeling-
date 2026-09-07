@@ -26,6 +26,14 @@ class ShadeDriver extends Homey.Driver {
      */
     this.seen = new Map();
 
+    /**
+     * Peripherals already described in full in the log. A shade is worth a
+     * detailed line the first time it is heard and never again - the scan runs
+     * every minute, and repeating it would bury everything else.
+     * @type {Set<string>}
+     */
+    this._described = new Set();
+
     /** Commands currently holding the Bluetooth adapter. */
     this._commandsInFlight = 0;
     this._scanTimer = null;
@@ -132,10 +140,47 @@ class ShadeDriver extends Homey.Driver {
       };
       results.set(advertisement.uuid, entry);
       this.seen.set(advertisement.uuid, entry);
+      this._describeOnce(entry);
     }
 
-    if (results.size > 0) this.log(`heard ${results.size} PowerView shade(s)`);
+    this.log(
+      results.size > 0
+        ? `heard ${results.size} PowerView shade(s) among ${advertisements.length} Bluetooth device(s)`
+        : `heard no PowerView shades among ${advertisements.length} Bluetooth device(s)`,
+    );
     return results;
+  }
+
+  /**
+   * Describe a shade in full, the first time it is heard.
+   *
+   * Everything needed to tell whether the app is reading a shade correctly is
+   * in the advertisement, so one line per shade answers most of what a bug
+   * report would otherwise have to ask for: which product it is, whether it
+   * needs the home key, and how well Homey can hear it.
+   *
+   * @param {object} entry
+   */
+  _describeOnce(entry) {
+    if (this._described.has(entry.uuid)) return;
+    this._described.add(entry.uuid);
+
+    const { decoded } = entry;
+    const parts = [
+      entry.localName || '(unnamed)',
+      entry.address || entry.uuid,
+      `${getTypeName(decoded.typeId)} (type ${decoded.typeId})`,
+      isEncrypted(decoded)
+        ? `encrypted, home ${decoded.homeId} - needs the home key`
+        : 'not bound to a home, so no key needed',
+      `position ${decoded.position1}%`,
+      `tilt ${decoded.tilt}%`,
+      `battery ${decoded.batteryLevel}%`,
+      `rssi ${entry.rssi}`,
+    ];
+    if (decoded.clockLost) parts.push('clock lost');
+
+    this.log(`shade: ${parts.join(' | ')}`);
   }
 
   /**
