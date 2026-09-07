@@ -1,0 +1,315 @@
+{
+  "id": "com.github.roccowijnsma.powerviewble",
+  "version": "1.0.0",
+  "compatibility": ">=8.1.0",
+  "sdk": 3,
+  "platforms": [
+    "local"
+  ],
+  "name": {
+    "en": "PowerView BLE",
+    "nl": "PowerView BLE"
+  },
+  "description": {
+    "en": "Control Hunter Douglas and Luxaflex PowerView Gen 3 shades directly over Bluetooth, without a gateway.",
+    "nl": "Bedien Hunter Douglas en Luxaflex PowerView Gen 3 raambekleding rechtstreeks via Bluetooth, zonder gateway."
+  },
+  "category": [
+    "appliances"
+  ],
+  "brandColor": "#0F2B46",
+  "permissions": [
+    "homey:wireless:ble"
+  ],
+  "author": {
+    "name": "roccowijnsma"
+  },
+  "contributing": {
+    "donate": {}
+  },
+  "images": {
+    "small": "/assets/images/small.png",
+    "large": "/assets/images/large.png",
+    "xlarge": "/assets/images/xlarge.png"
+  },
+  "capabilities": {
+    "powerview_secondary": {
+      "type": "number",
+      "title": {
+        "en": "Top rail",
+        "nl": "Bovenrail"
+      },
+      "hint": {
+        "en": "Position of the upper rail on a top-down/bottom-up shade. 0% is fully down, 100% is fully up.",
+        "nl": "Positie van de bovenste rail bij een top-down/bottom-up product. 0% is helemaal omlaag, 100% is helemaal omhoog."
+      },
+      "uiComponent": "slider",
+      "getable": true,
+      "setable": true,
+      "min": 0,
+      "max": 1,
+      "step": 0.01,
+      "decimals": 2,
+      "chartType": "stepLine",
+      "insights": true,
+      "insightsTitleTrue": {
+        "en": "Top rail",
+        "nl": "Bovenrail"
+      }
+    }
+  },
+  "drivers": [
+    {
+      "id": "shade",
+      "name": {
+        "en": "PowerView Gen 3 Shade",
+        "nl": "PowerView Gen 3 Raambekleding"
+      },
+      "class": "windowcoverings",
+      "platforms": [
+        "local"
+      ],
+      "connectivity": [
+        "ble"
+      ],
+      "capabilities": [
+        "windowcoverings_set",
+        "windowcoverings_state",
+        "measure_battery"
+      ],
+      "energy": {
+        "batteries": [
+          "INTERNAL",
+          "OTHER"
+        ]
+      },
+      "images": {
+        "small": "/drivers/shade/assets/images/small.png",
+        "large": "/drivers/shade/assets/images/large.png",
+        "xlarge": "/drivers/shade/assets/images/xlarge.png"
+      },
+      "pair": [
+        {
+          "id": "home_key",
+          "navigation": {
+            "next": "list_devices"
+          }
+        },
+        {
+          "id": "list_devices",
+          "template": "list_devices",
+          "navigation": {
+            "next": "add_devices"
+          }
+        },
+        {
+          "id": "add_devices",
+          "template": "add_devices"
+        }
+      ],
+      "settings": [
+        {
+          "type": "group",
+          "label": {
+            "en": "Movement",
+            "nl": "Beweging"
+          },
+          "children": [
+            {
+              "id": "velocity",
+              "type": "number",
+              "label": {
+                "en": "Speed",
+                "nl": "Snelheid"
+              },
+              "hint": {
+                "en": "Speed as a percentage of full speed. Leave at 0 to let the shade pick its own speed. Values below 10 are treated as 0 by the shade, so they are raised to 10.",
+                "nl": "Snelheid als percentage van de volle snelheid. Laat op 0 staan om het product zelf te laten kiezen. Waarden onder 10 worden door het product als 0 gelezen en worden daarom naar 10 opgehoogd."
+              },
+              "value": 0,
+              "min": 0,
+              "max": 100,
+              "units": {
+                "en": "%"
+              }
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Connection",
+            "nl": "Verbinding"
+          },
+          "children": [
+            {
+              "id": "home_key",
+              "type": "text",
+              "label": {
+                "en": "Home key (override)",
+                "nl": "Home key (afwijkend)"
+              },
+              "hint": {
+                "en": "32 hexadecimal characters. Leave empty to use the key set in the app settings, which is what almost everyone wants: one key covers every shade in a PowerView home.",
+                "nl": "32 hexadecimale tekens. Laat leeg om de sleutel uit de app-instellingen te gebruiken; dat is vrijwel altijd de bedoeling, want \u00e9\u00e9n sleutel geldt voor alle producten in een PowerView-huis."
+              },
+              "value": ""
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Shade",
+            "nl": "Product"
+          },
+          "children": [
+            {
+              "id": "shade_type",
+              "type": "label",
+              "label": {
+                "en": "Type",
+                "nl": "Type"
+              },
+              "value": ""
+            },
+            {
+              "id": "ble_address",
+              "type": "label",
+              "label": {
+                "en": "Bluetooth address",
+                "nl": "Bluetooth-adres"
+              },
+              "value": ""
+            },
+            {
+              "id": "firmware",
+              "type": "label",
+              "label": {
+                "en": "Firmware",
+                "nl": "Firmware"
+              },
+              "value": ""
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "flow": {
+    "triggers": [
+      {
+        "id": "shade_stopped",
+        "title": {
+          "en": "The shade stopped moving",
+          "nl": "Het product is gestopt met bewegen"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=shade"
+          }
+        ]
+      }
+    ],
+    "conditions": [
+      {
+        "id": "is_moving",
+        "title": {
+          "en": "The shade !{{is|is not}} moving",
+          "nl": "Het product !{{beweegt|beweegt niet}}"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=shade"
+          }
+        ]
+      }
+    ],
+    "actions": [
+      {
+        "id": "identify",
+        "title": {
+          "en": "Identify the shade",
+          "nl": "Identificeer het product"
+        },
+        "hint": {
+          "en": "Makes the shade jog and beep, so you can tell it apart from its neighbours.",
+          "nl": "Laat het product even bewegen en piepen, zodat je het van de buren kunt onderscheiden."
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=shade"
+          }
+        ]
+      },
+      {
+        "id": "activate_scene",
+        "title": {
+          "en": "Activate a scene stored on the shade",
+          "nl": "Activeer een sc\u00e8ne uit het product"
+        },
+        "titleFormatted": {
+          "en": "Activate scene [[scene]]",
+          "nl": "Activeer sc\u00e8ne [[scene]]"
+        },
+        "hint": {
+          "en": "Runs a scene stored on the shade itself. Slot 2 is its open scene and slot 3 its close scene; other slots hold whatever the PowerView app put there.",
+          "nl": "Start een sc\u00e8ne die in het product zelf is opgeslagen. Plek 2 is de open-sc\u00e8ne en plek 3 de sluit-sc\u00e8ne; andere plekken bevatten wat de PowerView-app erin heeft gezet."
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=shade"
+          },
+          {
+            "name": "scene",
+            "type": "number",
+            "min": 0,
+            "max": 255,
+            "step": 1,
+            "placeholder": {
+              "en": "Scene slot",
+              "nl": "Sc\u00e8neplek"
+            }
+          }
+        ]
+      },
+      {
+        "id": "set_velocity",
+        "title": {
+          "en": "Set the movement speed",
+          "nl": "Stel de bewegingssnelheid in"
+        },
+        "titleFormatted": {
+          "en": "Set the movement speed to [[velocity]]%",
+          "nl": "Zet de bewegingssnelheid op [[velocity]]%"
+        },
+        "hint": {
+          "en": "Applies to every move from now on, until changed again. 0 lets the shade pick its own speed.",
+          "nl": "Geldt voor elke volgende beweging, totdat je het weer aanpast. 0 laat het product zelf kiezen."
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=shade"
+          },
+          {
+            "name": "velocity",
+            "type": "number",
+            "min": 0,
+            "max": 100,
+            "step": 1
+          }
+        ]
+      }
+    ]
+  }
+}

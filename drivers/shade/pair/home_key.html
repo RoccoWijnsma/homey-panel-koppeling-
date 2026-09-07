@@ -1,0 +1,221 @@
+<style>
+  .pv-intro {
+    margin: 0 0 18px;
+    line-height: 1.5;
+  }
+
+  .pv-status {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    border-radius: 8px;
+    margin-bottom: 18px;
+    font-weight: 600;
+  }
+
+  .pv-status--ok {
+    background: #e6f4ea;
+    color: #17632c;
+  }
+
+  .pv-status--missing {
+    background: #fdf1e3;
+    color: #8a4b08;
+  }
+
+  .pv-tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 14px;
+  }
+
+  .pv-tab {
+    flex: 1;
+    padding: 9px 8px;
+    border: 1px solid #d5d8dd;
+    border-radius: 7px;
+    background: #fff;
+    font: inherit;
+    font-size: 13px;
+    cursor: pointer;
+  }
+
+  .pv-tab[aria-selected='true'] {
+    border-color: #0f2b46;
+    background: #0f2b46;
+    color: #fff;
+  }
+
+  .pv-panel {
+    margin-bottom: 16px;
+  }
+
+  .pv-panel[hidden] {
+    display: none;
+  }
+
+  .pv-panel label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .pv-panel input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px;
+    border: 1px solid #d5d8dd;
+    border-radius: 7px;
+    font: inherit;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+
+  .pv-hint {
+    margin: 8px 0 0;
+    font-size: 12px;
+    line-height: 1.5;
+    color: #6b7280;
+  }
+
+  .pv-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .pv-actions button {
+    flex: 1;
+    padding: 11px;
+    border-radius: 7px;
+    border: 1px solid #d5d8dd;
+    background: #fff;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .pv-actions .pv-primary {
+    border-color: #0f2b46;
+    background: #0f2b46;
+    color: #fff;
+  }
+
+  .pv-error {
+    margin-top: 12px;
+    color: #b3261e;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .pv-error[hidden] {
+    display: none;
+  }
+</style>
+
+<p class="pv-intro" data-i18n="pair.home_key.intro"></p>
+
+<div id="status" class="pv-status pv-status--missing">
+  <span id="status-text"></span>
+</div>
+
+<div class="pv-tabs" role="tablist">
+  <button type="button" class="pv-tab" role="tab" id="tab-manual" data-panel="panel-manual" aria-selected="true"></button>
+  <button type="button" class="pv-tab" role="tab" id="tab-gateway" data-panel="panel-gateway" aria-selected="false"></button>
+</div>
+
+<div class="pv-panel" id="panel-manual">
+  <label for="home-key" data-i18n="pair.home_key.key_label"></label>
+  <input id="home-key" type="text" spellcheck="false" autocomplete="off" placeholder="0123456789abcdef0123456789abcdef" />
+  <p class="pv-hint" data-i18n="pair.home_key.key_hint"></p>
+</div>
+
+<div class="pv-panel" id="panel-gateway" hidden>
+  <label for="gateway" data-i18n="pair.home_key.gateway_label"></label>
+  <input id="gateway" type="text" spellcheck="false" autocomplete="off" placeholder="powerview-g3.local" />
+  <p class="pv-hint" data-i18n="pair.home_key.gateway_hint"></p>
+</div>
+
+<p class="pv-error" id="error" hidden></p>
+
+<div class="pv-actions">
+  <button type="button" id="skip"></button>
+  <button type="button" id="save" class="pv-primary"></button>
+</div>
+
+<script type="text/javascript">
+  /* global Homey */
+  function onHomeyReady(Homey) {
+    const el = (id) => document.getElementById(id);
+    const status = el('status');
+    const statusText = el('status-text');
+    const error = el('error');
+    const saveButton = el('save');
+    const skipButton = el('skip');
+
+    // Fill every element that names a translation key, so the markup stays
+    // free of copy and the strings live with all the others in /locales.
+    for (const node of document.querySelectorAll('[data-i18n]')) {
+      node.textContent = Homey.__(node.getAttribute('data-i18n'));
+    }
+    el('tab-manual').textContent = Homey.__('pair.home_key.tab_manual');
+    el('tab-gateway').textContent = Homey.__('pair.home_key.tab_gateway');
+    skipButton.textContent = Homey.__('pair.home_key.skip');
+    saveButton.textContent = Homey.__('pair.home_key.save');
+
+    let activeTab = 'manual';
+
+    function selectTab(name) {
+      activeTab = name;
+      for (const tab of document.querySelectorAll('.pv-tab')) {
+        const selected = tab.id === `tab-${name}`;
+        tab.setAttribute('aria-selected', String(selected));
+        el(tab.dataset.panel).hidden = !selected;
+      }
+      showError(null);
+    }
+
+    for (const tab of document.querySelectorAll('.pv-tab')) {
+      tab.addEventListener('click', () => selectTab(tab.id.replace('tab-', '')));
+    }
+
+    function showError(message) {
+      error.hidden = !message;
+      error.textContent = message || '';
+    }
+
+    function renderStatus(hasKey) {
+      status.className = `pv-status ${hasKey ? 'pv-status--ok' : 'pv-status--missing'}`;
+      statusText.textContent = Homey.__(hasKey ? 'pair.home_key.have_key' : 'pair.home_key.no_key');
+      skipButton.textContent = Homey.__(hasKey ? 'pair.home_key.continue' : 'pair.home_key.skip');
+    }
+
+    async function save() {
+      showError(null);
+      Homey.showLoadingOverlay();
+      try {
+        const result = activeTab === 'gateway'
+          ? await Homey.emit('fetch_home_key', { gateway: el('gateway').value })
+          : await Homey.emit('save_home_key', { homeKey: el('home-key').value });
+        renderStatus(result.hasKey);
+        Homey.hideLoadingOverlay();
+        Homey.nextView();
+      } catch (err) {
+        Homey.hideLoadingOverlay();
+        showError(err && err.message ? err.message : String(err));
+      }
+    }
+
+    saveButton.addEventListener('click', save);
+    skipButton.addEventListener('click', () => Homey.nextView());
+    el('home-key').addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') save();
+    });
+
+    Homey.emit('get_home_key_state', {})
+      .then((state) => renderStatus(Boolean(state && state.hasKey)))
+      .catch(() => renderStatus(false));
+
+    Homey.ready();
+  }
+</script>

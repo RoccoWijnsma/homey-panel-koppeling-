@@ -1,0 +1,40 @@
+{
+  "device": {
+    "searching": "Zoeken naar dit product via Bluetooth…",
+    "out_of_range": "Buiten Bluetooth-bereik. Homey heeft dit product al een tijd niet gehoord.",
+    "no_reading": "Homey heeft dit product zijn positie nog niet horen uitzenden en weet dus niet waar de andere as staat. Probeer het over een minuut opnieuw.",
+    "needs_home_key": "Dit product hoort bij een PowerView-huis en negeert opdrachten zonder de home key. Vul de sleutel in bij de app-instellingen."
+  },
+  "pair": {
+    "home_key": {
+      "intro": "Een product dat in de PowerView-app aan een huis is toegevoegd, reageert alleen op versleutelde opdrachten. Eén sleutel geldt voor alle producten in dat huis, dus dit hoef je maar één keer te doen. Een product dat nooit aan een huis is toegevoegd, werkt zonder sleutel.",
+      "have_key": "Er is een home key ingesteld",
+      "no_key": "Nog geen home key ingesteld",
+      "tab_manual": "Sleutel plakken",
+      "tab_gateway": "Uit gateway lezen",
+      "key_label": "Home key",
+      "key_hint": "32 hexadecimale tekens. Spaties, dubbele punten en \\x-notatie worden genegeerd, dus plak hem in de vorm die je hebt.",
+      "gateway_label": "Adres van de gateway",
+      "gateway_hint": "Hostnaam of IP-adres van een PowerView Gen 3 gateway in dit netwerk. Homey vraagt de sleutel op; dat duurt tot een halve minuut terwijl de gateway zijn eigen Bluetooth-verbindingen opzet.",
+      "skip": "Overslaan",
+      "continue": "Verder",
+      "save": "Opslaan en verder"
+    },
+    "errors": {
+      "invalid_key": "Dit is geen sleutel van 16 bytes. Het moeten 32 hexadecimale tekens zijn.",
+      "no_gateway": "Vul eerst de hostnaam of het IP-adres van de gateway in.",
+      "gateway_failed": "Kon de sleutel niet uit de gateway lezen: {{reason}}"
+    }
+  },
+  "settings": {
+    "heading": "PowerView home key",
+    "intro": "Producten die bij een huis in de PowerView-app horen, reageren alleen op versleutelde opdrachten. Eén sleutel geldt voor het hele huis. Laat dit leeg als je producten nooit aan een huis zijn toegevoegd.",
+    "key_label": "Home key",
+    "key_hint": "32 hexadecimale tekens. Laat leeg om de sleutel te verwijderen.",
+    "poll_label": "Scaninterval",
+    "poll_hint": "Hoe vaak Homey luistert naar positie- en accu-updates, in seconden. Scannen bezet de Bluetooth-radio, dus korter is niet beter: 60 seconden voldoet in de meeste huizen.",
+    "save": "Opslaan",
+    "saved": "Opgeslagen.",
+    "invalid_key": "Dit is geen sleutel van 16 bytes. Het moeten 32 hexadecimale tekens zijn."
+  }
+}
