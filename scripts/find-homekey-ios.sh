@@ -104,13 +104,37 @@ stored_path() {
 
 is_sqlite() {
   [ -f "$1" ] || return 1
-  [ "$(head -c 15 "$1" 2>/dev/null)" = 'SQLite format 3' ]
+  # Matched through a pipe rather than a command substitution: backup files are
+  # binary, and capturing one that starts with a null byte makes the shell warn
+  # about discarding it - noise that looks like a fault and is not.
+  head -c 16 "$1" 2>/dev/null | LC_ALL=C grep -qa 'SQLite format 3'
 }
 
-has_powerview_schema() {
+# Table names in a database, one per line, lowercased.
+table_names() {
+  sqlite3 "$1" "SELECT name FROM sqlite_master WHERE type='table';" 2>/dev/null \
+    | tr '[:upper:]' '[:lower:]'
+}
+
+# Name the table holding the home row, or fail if this is not the app's
+# database. Two shapes are recognised: the plain `homes`/`gateways` pair the
+# Android app uses, and Core Data's, which prefixes every entity with Z - so
+# the same model appears as ZHOME and ZGATEWAY. iOS apps overwhelmingly use
+# Core Data, and matching only the Android names is why a backup that plainly
+# contained the app's data came back empty-handed.
+powerview_home_table() {
   local tables
-  tables=$(sqlite3 "$1" '.tables' 2>/dev/null) || return 1
-  grep -qw homes <<<"$tables" && grep -qw gateways <<<"$tables"
+  tables=$(table_names "$1") || return 1
+
+  if grep -qx homes <<<"$tables" && grep -qx gateways <<<"$tables"; then
+    printf 'homes'
+    return 0
+  fi
+  if grep -qx zhome <<<"$tables" && grep -qx zgateway <<<"$tables"; then
+    printf 'ZHOME'
+    return 0
+  fi
+  return 1
 }
 
 # File IDs to test, narrowest plausible set first. The app's own domain is the
@@ -132,17 +156,54 @@ candidate_ids() {
     "SELECT fileID FROM Files WHERE domain LIKE 'AppDomain%' AND flags = 1;" 2>/dev/null || true
 }
 
+# Prints "<home table>|<path>". Both halves have to travel on stdout: the
+# caller reads this through a command substitution, so a variable set here
+# would be set in a subshell and lost.
 find_database() {
-  local backup="$1" id path
+  local backup="$1" id path table
   while IFS= read -r id; do
     [ -n "$id" ] || continue
     path=$(stored_path "$backup" "$id")
     is_sqlite "$path" || continue
-    has_powerview_schema "$path" || continue
-    printf '%s' "$path"
+    table=$(powerview_home_table "$path") || continue
+    printf '%s|%s' "$table" "$path"
     return 0
   done < <(candidate_ids "$backup")
   return 1
+}
+
+# Describe what the app actually stored, for when the search comes up empty.
+# Structure only - paths, table names, column names - so it can be shared
+# without handing over the key along with it.
+probe() {
+  local backup="$1" id domain rel path tables t cols
+  bold "Files under the PowerView domains"
+
+  while IFS='|' read -r id domain rel; do
+    [ -n "$id" ] || continue
+    path=$(stored_path "$backup" "$id")
+    [ -f "$path" ] || continue
+
+    if is_sqlite "$path"; then
+      printf '  [sqlite] %s :: %s\n' "$domain" "$rel"
+      tables=$(sqlite3 "$path" "SELECT name FROM sqlite_master WHERE type='table';" 2>/dev/null)
+      while IFS= read -r t; do
+        [ -n "$t" ] || continue
+        printf '      table %s\n' "$t"
+        cols=$(sqlite3 "$path" "SELECT name FROM pragma_table_info('$t');" 2>/dev/null \
+          | grep -i key | tr '\n' ' ')
+        [ -n "$cols" ] && printf '        key-ish columns: %s\n' "$cols"
+      done <<< "$tables"
+    else
+      printf '  %s :: %s\n' "$domain" "$rel"
+    fi
+  done < <(sqlite3 "$backup/Manifest.db" \
+    "SELECT fileID || '|' || domain || '|' || relativePath FROM Files
+      WHERE (domain LIKE '%powerview%' OR domain LIKE '%hunterdouglas%')
+        AND flags = 1;" 2>/dev/null)
+
+  printf '\n'
+  bold "Paste the above back and the search can be pointed at the right table."
 }
 
 # --- report -------------------------------------------------------------------
@@ -166,25 +227,25 @@ list_backups() {
 }
 
 print_key() {
-  local db="$1" col val found=0
+  local db="$1" table="$2" col val found=0
   bold "Found the PowerView database."
-  printf '  %s\n\n' "$db"
+  printf '  %s\n  home table: %s\n\n' "$db" "$table"
 
   while IFS= read -r col; do
     [ -n "$col" ] || continue
     case "$(tr '[:upper:]' '[:lower:]' <<<"$col")" in
       *key*)
-        val=$(sqlite3 "$db" "SELECT \"$col\" FROM homes LIMIT 1;" 2>/dev/null || true)
+        val=$(sqlite3 "$db" "SELECT \"$col\" FROM \"$table\" LIMIT 1;" 2>/dev/null || true)
         [ -n "$val" ] || continue
         printf '\033[1;32m  %s = %s\033[0m\n' "$col" "$val"
         found=1
         ;;
     esac
-  done < <(sqlite3 "$db" "SELECT name FROM pragma_table_info('homes');" 2>/dev/null || true)
+  done < <(sqlite3 "$db" "SELECT name FROM pragma_table_info('$table');" 2>/dev/null || true)
 
   if [ "$found" -eq 0 ]; then
-    warn "No column on 'homes' had 'key' in its name. Its full schema:"
-    sqlite3 "$db" '.schema homes' | sed 's/^/    /' >&2
+    warn "No column on '$table' had 'key' in its name. Its full schema:"
+    sqlite3 "$db" ".schema $table" | sed 's/^/    /' >&2
     warn "Look for a 32-character hexadecimal value; that is the key."
     return 1
   fi
@@ -208,6 +269,10 @@ need plutil
 
 case "${1:-}" in
   --list|-l) list_backups; exit 0 ;;
+  --probe|-p)
+    [ -d "$BACKUP_ROOT" ] || fail "No backup folder at $BACKUP_ROOT."
+    assert_backup_root_readable "$BACKUP_ROOT"
+    probe "$(newest_backup)"; exit 0 ;;
   --help|-h) sed -n '3,20p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
 esac
 
@@ -239,17 +304,13 @@ printf '  %s\n\n' "$backup"
 assert_not_encrypted "$backup"
 
 printf 'Searching for the PowerView database...\n'
-if db=$(find_database "$backup"); then
+if found=$(find_database "$backup"); then
   printf '\n'
-  print_key "$db"
+  print_key "${found#*|}" "${found%%|*}"
 else
-  fail "$(cat <<'NOTFOUND'
-No database with a PowerView schema in this backup.
-
-Either the app was not installed when the backup was made, or it excludes its
-data from backups. Run with --list to see which apps did back up their data.
-
-If PowerView is not among them, the ESP32 route in the README is the way.
-NOTFOUND
-)"
+  warn "No database matched a known PowerView schema."
+  warn "Showing what the app did store, so the search can be aimed properly."
+  printf '\n' >&2
+  probe "$backup"
+  exit 1
 fi
