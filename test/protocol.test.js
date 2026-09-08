@@ -3,7 +3,7 @@
 const assert = require('node:assert/strict');
 const { describe, it } = require('node:test');
 
-const { CMD, KEEP_POSITION } = require('../lib/const');
+const { ADVERTISEMENT_RECORD_LENGTH, CMD, KEEP_POSITION } = require('../lib/const');
 const {
   buildFrame,
   buildScenePayload,
@@ -219,13 +219,27 @@ describe('extractShadeRecord', () => {
     assert.deepEqual(extractShadeRecord(withCompanyId), record);
   });
 
-  it('accepts a record that has already been stripped', () => {
-    assert.deepEqual(extractShadeRecord(record), record);
+  it('rejects a bare record with no company identifier', () => {
+    // Homey always includes the prefix, so a record without one is not a
+    // shade's - it is some other device that happens to be the right length.
+    assert.equal(extractShadeRecord(record), null);
+  });
+
+  it('does not mistake an Apple beacon for a shade', () => {
+    // Apple's manufacturer data runs nine bytes, exactly a shade record's
+    // length. Accepting it read Apple's company ID (0x004C) as a home ID and
+    // its nearby-info type as a shade type, so a house full of iPhones and
+    // AirPods appeared as seven shades in "home 76" reporting tilts of 148%.
+    const apple = Buffer.from('4c0010060a1f8b94c0', 'hex');
+
+    assert.equal(apple.length, ADVERTISEMENT_RECORD_LENGTH, 'same length as a real record');
+    assert.equal(extractShadeRecord(apple), null);
   });
 
   it('rejects data from anything that is not a shade', () => {
     assert.equal(extractShadeRecord(Buffer.from([0x4c, 0x00, 0x02, 0x15])), null, 'an iBeacon');
-    assert.equal(extractShadeRecord(Buffer.concat([Buffer.from([0x4c, 0x00]), record])), null);
+    assert.equal(extractShadeRecord(Buffer.concat([Buffer.from([0x4c, 0x00]), record])), null,
+      'a nine-byte payload from Apple rather than Hunter Douglas');
     assert.equal(extractShadeRecord(null), null);
   });
 });
