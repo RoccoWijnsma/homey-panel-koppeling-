@@ -88,13 +88,22 @@ message — and the PowerView app's own BLE log records each frame twice, once i
 the clear and once as it went over the link. Those are known-plaintext pairs,
 and XORing one recovers the keystream.
 
+`find-homekey-ios.sh` does this by itself: when the database is not in the
+backup, it locates the log and derives the keystream. So the whole hunt is
+still one command:
+
+```bash
+./scripts/find-homekey-ios.sh
+```
+
+To run the derivation against a log you already have, call it directly:
+
 ```bash
 node scripts/derive-keystream.js /path/to/blelog.txt
 ```
 
-That log lives in the app's container, which on iOS means a backup —
-`find-homekey-ios.sh --probe` locates it. The keystream goes in the same
-settings page as the key and is used in preference to it.
+The keystream goes in the same settings page as the key and is used in
+preference to it.
 
 The key itself stays out of reach, since recovering it from the keystream means
 inverting AES. It is also not needed: the keystream is what does the work.

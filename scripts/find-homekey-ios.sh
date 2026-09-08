@@ -219,6 +219,44 @@ probe() {
   bold "Paste the above back and the search can be pointed at the right table."
 }
 
+# The app's BLE log, if the backup carries one. It records every frame twice -
+# decoded and as sent - which is what the keystream derivation feeds on.
+find_ble_log() {
+  local backup="$1" id path
+  while IFS= read -r id; do
+    [ -n "$id" ] || continue
+    path=$(stored_path "$backup" "$id")
+    [ -f "$path" ] || continue
+    printf '%s' "$path"
+    return 0
+  done < <(sqlite3 "$backup/Manifest.db" \
+    "SELECT fileID FROM Files
+      WHERE domain = 'AppDomain-com.hunterdouglas.powerview'
+        AND relativePath LIKE '%blelog%'
+      ORDER BY length(relativePath);" 2>/dev/null || true)
+  return 1
+}
+
+# Try the keystream when the database is not there. The app excludes its own
+# store from backups on at least some versions, and then this is the only route
+# left that does not need hardware.
+try_keystream() {
+  local backup="$1" log deriver
+  deriver="$(dirname "$0")/derive-keystream.js"
+
+  log=$(find_ble_log "$backup") || return 1
+  [ -f "$deriver" ] || return 1
+  command -v node >/dev/null 2>&1 || {
+    warn "Found the app's BLE log but Node is not installed, so the keystream"
+    warn "cannot be derived. Install Node and run this again."
+    return 1
+  }
+
+  bold "No database, but the app's BLE log is here. Deriving the keystream."
+  printf '  %s\n\n' "$log"
+  node "$deriver" "$log"
+}
+
 # --- report -------------------------------------------------------------------
 
 list_backups() {
@@ -320,8 +358,10 @@ printf 'Searching for the PowerView database...\n'
 if found=$(find_database "$backup"); then
   printf '\n'
   print_key "${found#*|}" "${found%%|*}"
+elif try_keystream "$backup"; then
+  :
 else
-  warn "No database matched a known PowerView schema."
+  warn "No database matched a known PowerView schema, and no usable BLE log."
   warn "Showing what the app did store, so the search can be aimed properly."
   printf '\n' >&2
   probe "$backup"
