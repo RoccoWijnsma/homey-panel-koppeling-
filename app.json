@@ -154,6 +154,19 @@
                 "nl": "32 hexadecimale tekens. Laat leeg om de sleutel uit de app-instellingen te gebruiken; dat is vrijwel altijd de bedoeling, want \u00e9\u00e9n sleutel geldt voor alle producten in een PowerView-huis."
               },
               "value": ""
+            },
+            {
+              "id": "keystream",
+              "type": "text",
+              "label": {
+                "en": "Keystream (override)",
+                "nl": "Keystream (afwijkend)"
+              },
+              "hint": {
+                "en": "Hex, at least 13 bytes. An alternative to the home key, recovered from the PowerView app's own BLE log. Used in preference to the key when both are set. Leave empty to use the app settings.",
+                "nl": "Hex, minstens 13 bytes. Een alternatief voor de home key, afgeleid uit het BLE-log van de PowerView-app zelf. Krijgt voorrang op de sleutel als beide zijn ingevuld. Laat leeg om de app-instellingen te gebruiken."
+              },
+              "value": ""
             }
           ]
         },

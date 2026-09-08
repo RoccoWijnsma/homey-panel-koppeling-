@@ -35,6 +35,9 @@
     "poll_hint": "How often Homey listens for position and battery updates, in seconds. Scanning occupies the Bluetooth radio, so shorter is not better: 60 seconds suits most homes.",
     "save": "Save",
     "saved": "Saved.",
-    "invalid_key": "That is not a 16-byte key. It should be 32 hexadecimal characters."
+    "invalid_key": "That is not a 16-byte key. It should be 32 hexadecimal characters.",
+    "keystream_label": "Keystream",
+    "keystream_hint": "Hex, at least 13 bytes. An alternative to the home key for installs where the key cannot be had - run scripts/derive-keystream.js against the PowerView app's own BLE log. Used in preference to the key when both are set.",
+    "invalid_keystream": "That is not a usable keystream. It should be hex, at least 13 bytes (26 characters)."
   }
 }

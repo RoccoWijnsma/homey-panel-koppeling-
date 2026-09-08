@@ -3,7 +3,7 @@
 const Homey = require('homey');
 
 const { MIN_VELOCITY, SCENE_CLOSE, SCENE_OPEN } = require('../../lib/const');
-const { isEncrypted, parseHomeKey } = require('../../lib/protocol');
+const { isEncrypted, parseHomeKey, parseKeystream } = require('../../lib/protocol');
 const { getCapabilities, getHomeyCapabilities, getTypeName } = require('../../lib/shade-types');
 const {
   buildLiftMove,
@@ -48,6 +48,7 @@ class ShadeDevice extends Homey.Device {
       ble: this.homey.ble,
       peripheralUuid: this.getData().id,
       homeKey: this._resolveHomeKey(),
+      keystream: this._resolveKeystream(),
       encrypted: Boolean(this.getStoreValue('encrypted')),
       log: (...args) => this.log(...args),
       error: (...args) => this.error(...args),
@@ -55,6 +56,7 @@ class ShadeDevice extends Homey.Device {
 
     this._onHomeKeyChanged = () => {
       this._shade.homeKey = this._resolveHomeKey();
+      this._shade.keystream = this._resolveKeystream();
       this._refreshWarning();
     };
     this.homey.app.on('home_key_changed', this._onHomeKeyChanged);
@@ -409,8 +411,9 @@ class ShadeDevice extends Homey.Device {
   // --- settings --------------------------------------------------------------
 
   async onSettings({ changedKeys }) {
-    if (changedKeys.includes('home_key')) {
+    if (changedKeys.includes('home_key') || changedKeys.includes('keystream')) {
       this._shade.homeKey = this._resolveHomeKey();
+      this._shade.keystream = this._resolveKeystream();
       this._refreshWarning();
     }
   }
@@ -422,6 +425,14 @@ class ShadeDevice extends Homey.Device {
    */
   _resolveHomeKey() {
     return parseHomeKey(this.getSetting('home_key')) || this.homey.app.getHomeKey();
+  }
+
+  /**
+   * @returns {Buffer|null} The per-device keystream if one is set, otherwise
+   *   the home-wide one.
+   */
+  _resolveKeystream() {
+    return parseKeystream(this.getSetting('keystream')) || this.homey.app.getKeystream();
   }
 
   /**

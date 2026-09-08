@@ -80,6 +80,25 @@ describes the manual route.
 project ships a shade emulator that you add to your PowerView home like a real
 shade; it logs the key the app hands it.
 
+### Or skip the key entirely
+
+The key is not the only way in. The shades encrypt with AES-128-CTR and restart
+the counter at zero for **every** frame, so the same keystream covers every
+message — and the PowerView app's own BLE log records each frame twice, once in
+the clear and once as it went over the link. Those are known-plaintext pairs,
+and XORing one recovers the keystream.
+
+```bash
+node scripts/derive-keystream.js /path/to/blelog.txt
+```
+
+That log lives in the app's container, which on iOS means a backup —
+`find-homekey-ios.sh --probe` locates it. The keystream goes in the same
+settings page as the key and is used in preference to it.
+
+The key itself stays out of reach, since recovering it from the keystream means
+inverting AES. It is also not needed: the keystream is what does the work.
+
 However you get it, paste it into **Settings → Apps → PowerView BLE**, or into
 the first step of pairing. Spaces, colons and `\xAB` escapes are stripped, so
 paste it in whatever shape you have it.
@@ -163,7 +182,7 @@ and on a gateway-less install nothing else would.
 | Control characteristic | `cafe1001-c0ff-ee01-8000-a110ca7ab1e0` (write + notify) |
 | Advertising company ID | 2073 (`0x0819`), 9-byte record |
 | Frame | opcode (LE16), sequence, payload length, payload |
-| Encryption | AES-128-CTR, zero counter, restarted per frame |
+| Encryption | AES-128-CTR, zero counter, restarted per frame — so one keystream serves every frame |
 | Lift positions | percent × 100 on the wire, percent × 10 in advertisements |
 
 `lib/protocol.js` carries the byte-level detail and `lib/const.js` the

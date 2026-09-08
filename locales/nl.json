@@ -35,6 +35,9 @@
     "poll_hint": "Hoe vaak Homey luistert naar positie- en accu-updates, in seconden. Scannen bezet de Bluetooth-radio, dus korter is niet beter: 60 seconden voldoet in de meeste huizen.",
     "save": "Opslaan",
     "saved": "Opgeslagen.",
-    "invalid_key": "Dit is geen sleutel van 16 bytes. Het moeten 32 hexadecimale tekens zijn."
+    "invalid_key": "Dit is geen sleutel van 16 bytes. Het moeten 32 hexadecimale tekens zijn.",
+    "keystream_label": "Keystream",
+    "keystream_hint": "Hex, minstens 13 bytes. Een alternatief voor de home key als die niet te achterhalen is — draai scripts/derive-keystream.js op het BLE-log van de PowerView-app zelf. Krijgt voorrang op de sleutel als beide zijn ingevuld.",
+    "invalid_keystream": "Dit is geen bruikbare keystream. Het moet hex zijn, minstens 13 bytes (26 tekens)."
   }
 }

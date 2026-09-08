@@ -2,10 +2,17 @@
 
 const Homey = require('homey');
 
-const { parseHomeKey } = require('./lib/protocol');
+const { parseHomeKey, parseKeystream } = require('./lib/protocol');
 
 /** Settings key holding the home-wide AES key, as 32 hex characters. */
 const SETTING_HOME_KEY = 'home_key';
+
+/**
+ * Settings key holding a keystream recovered from the vendor app's log, as
+ * hex. An alternative to the home key for installs where the key cannot be
+ * had; see scripts/derive-keystream.js.
+ */
+const SETTING_KEYSTREAM = 'keystream';
 
 /** Settings key holding how often to scan for advertisements, in seconds. */
 const SETTING_POLL_INTERVAL = 'poll_interval';
@@ -21,8 +28,8 @@ class PowerViewApp extends Homey.App {
     // rather than being typed in once per device. Devices watch for changes so
     // a key pasted after pairing takes effect without re-adding anything.
     this.homey.settings.on('set', (key) => {
-      if (key !== SETTING_HOME_KEY) return;
-      this.log('home key changed');
+      if (key !== SETTING_HOME_KEY && key !== SETTING_KEYSTREAM) return;
+      this.log(`${key} changed`);
       this.emit('home_key_changed');
     });
 
@@ -43,6 +50,15 @@ class PowerViewApp extends Homey.App {
    *   scan occupies the Bluetooth radio and a shade that is scanned constantly
    *   cannot be connected to.
    */
+  /**
+   * @returns {Buffer|null} The home-wide keystream, or null if none is set.
+   *   Used in preference to the key when both are present - it is the more
+   *   direct of the two, and the one that was verified against real traffic.
+   */
+  getKeystream() {
+    return parseKeystream(this.homey.settings.get(SETTING_KEYSTREAM));
+  }
+
   getPollInterval() {
     const configured = Number(this.homey.settings.get(SETTING_POLL_INTERVAL));
     if (!Number.isFinite(configured) || configured <= 0) return DEFAULT_POLL_INTERVAL;
@@ -72,4 +88,5 @@ module.exports = PowerViewApp;
 module.exports.DEFAULT_POLL_INTERVAL = DEFAULT_POLL_INTERVAL;
 module.exports.MIN_POLL_INTERVAL = MIN_POLL_INTERVAL;
 module.exports.SETTING_HOME_KEY = SETTING_HOME_KEY;
+module.exports.SETTING_KEYSTREAM = SETTING_KEYSTREAM;
 module.exports.SETTING_POLL_INTERVAL = SETTING_POLL_INTERVAL;

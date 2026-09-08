@@ -30,6 +30,7 @@ const KEY = Buffer.from('0123456789abcdef0123456789abcdef', 'hex');
  */
 function createFakeBle({
   homeKey = null,
+  keystream = null,
   replyDelayMs = 0,
   reply = true,
   status = 0,
@@ -37,6 +38,17 @@ function createFakeBle({
 } = {}) {
   const state = { writes: [], connects: 0, disconnects: 0, subscriptions: 0 };
   let notify = null;
+
+  // Both schemes are an XOR against a keystream, so the fake applies whichever
+  // the shade under test is configured for.
+  const scramble = (data) => {
+    if (keystream) {
+      const out = Buffer.alloc(data.length);
+      for (let i = 0; i < data.length; i++) out[i] = data[i] ^ keystream[i];
+      return out;
+    }
+    return homeKey ? transformFrame(data, homeKey) : Buffer.from(data);
+  };
 
   const controlCharacteristic = {
     uuid: CONTROL_CHARACTERISTIC_UUID,
@@ -48,7 +60,7 @@ function createFakeBle({
       return Buffer.from('');
     },
     async write(data) {
-      const plain = homeKey ? transformFrame(data, homeKey) : Buffer.from(data);
+      const plain = scramble(data);
       state.writes.push(plain);
       if (!reply) return Buffer.alloc(0);
 
@@ -60,7 +72,7 @@ function createFakeBle({
       ack.writeUInt8(status, 4);
 
       setTimeout(() => {
-        if (notify) notify(homeKey ? transformFrame(ack, homeKey) : ack);
+        if (notify) notify(scramble(ack));
       }, replyDelayMs);
       return Buffer.alloc(0);
     },
@@ -199,6 +211,46 @@ describe('encryption', () => {
     const [command] = commands(state.writes);
     assert.equal(command.opcode, CMD.SET_POSITION);
     assert.equal(command.payload.readUInt16LE(0), 1000);
+  });
+
+  it('can work from a recovered keystream instead of the key', async () => {
+    // The shades restart their counter at zero for every frame, so a keystream
+    // lifted from the vendor app's log drives them just as well as the key -
+    // which is the only route left when the key cannot be extracted.
+    const stream = Buffer.from('27ec9a4f13b8005ce1220d7f6a34c9de', 'hex');
+    const { ble, state } = createFakeBle({ keystream: stream });
+    const shade = makeShade(ble, { keystream: stream, encrypted: true });
+
+    assert.equal(shade.canControl, true);
+    await shade.setPosition({ pos1: 25 });
+
+    const [command] = commands(state.writes);
+    assert.equal(command.opcode, CMD.SET_POSITION);
+    assert.equal(command.payload.readUInt16LE(0), 2500);
+  });
+
+  it('prefers the keystream when both are configured', async () => {
+    const stream = Buffer.from('27ec9a4f13b8005ce1220d7f6a34c9de', 'hex');
+    const { ble, state } = createFakeBle({ keystream: stream });
+    const shade = makeShade(ble, { keystream: stream, homeKey: KEY, encrypted: true });
+
+    await shade.stop();
+
+    // The fake only unscrambles with the keystream, so a readable frame here
+    // proves the key was not what went on the wire.
+    assert.equal(commands(state.writes)[0].opcode, CMD.STOP);
+  });
+
+  it('refuses a frame the keystream is too short to cover', async () => {
+    // Half-encrypting a command would put a frame on the wire that means
+    // something else entirely. Ten bytes is under the thirteen a position
+    // command needs, which is why parseKeystream will not accept one this
+    // short in the first place.
+    const short = Buffer.alloc(10, 0xaa);
+    const { ble } = createFakeBle({ keystream: short });
+    const shade = makeShade(ble, { keystream: short, encrypted: true });
+
+    await assert.rejects(shade.setPosition({ pos1: 25, pos2: 50 }), RangeError);
   });
 
   it('refuses to put plaintext on the wire when the key is missing', async () => {
