@@ -57,10 +57,24 @@ the gateway to relay a key request to one of its shades. Expect it to take
 20-30 seconds: the gateway opens its own BLE connections on demand, so the
 first attempts usually time out and are retried.
 
-**From the PowerView app's data.** Community write-ups cover extracting it from
-the phone app; the
-[Home Assistant thread](https://community.home-assistant.io/t/hunter-douglas-powerview-gen-3-integration/424836)
-is the place to look.
+**From the PowerView app on an iPhone.** The app keeps the key in its own
+SQLite database, which on iOS is only reachable through a local backup. Back
+the phone up in Finder with *Encrypt local backup* **off**, then:
+
+```bash
+./scripts/find-homekey-ios.sh
+```
+
+It finds the database by its schema rather than its name — the filename is
+generated per install, so any name quoted in a forum post is that person's, not
+yours — and prints the key without writing it anywhere. `--list` shows which
+backups and which apps' data are present, for when nothing is found.
+
+**From the PowerView app on Android.** `hdpv_ble` ships
+[`extract_homekey_waydroid.sh`](https://github.com/safepay/hdpv_ble/blob/main/scripts/extract_homekey_waydroid.sh),
+which runs the app under Waydroid and reads the same table. Tested on Ubuntu
+only. The [Home Assistant thread](https://community.home-assistant.io/t/hunter-douglas-powerview-gen-3-integration/424836/228)
+describes the manual route.
 
 **With an ESP32.** The [`hdpv_ble`](https://github.com/safepay/hdpv_ble)
 project ships a shade emulator that you add to your PowerView home like a real
@@ -194,6 +208,11 @@ npm test             # unit tests: protocol, position mapping, transport
 npm run validate     # homey app validate --level publish
 node tools/make-images.js   # regenerate the artwork
 ```
+
+`scripts/find-homekey-ios.sh` is the one piece that cannot be exercised here:
+it needs a real iPhone backup and macOS's `plutil`. Its database-finding and
+reporting paths are verified against a simulated backup, including the
+encrypted-backup and app-not-present cases.
 
 The tests cover the parts worth covering: frame encoding, the AES-CTR round
 trip, advertisement decoding against known byte vectors, the position mapping
