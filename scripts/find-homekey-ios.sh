@@ -153,7 +153,7 @@ candidate_ids() {
 
   warn "No app domain mentioned PowerView; searching every app's data instead."
   sqlite3 "$manifest" \
-    "SELECT fileID FROM Files WHERE domain LIKE 'AppDomain%' AND flags = 1;" 2>/dev/null || true
+    "SELECT fileID FROM Files WHERE domain LIKE 'AppDomain%';" 2>/dev/null || true
 }
 
 # Prints "<home table>|<path>". Both halves have to travel on stdout: the
@@ -190,17 +190,30 @@ probe() {
       while IFS= read -r t; do
         [ -n "$t" ] || continue
         printf '      table %s\n' "$t"
+        # `|| true` is load-bearing: pipefail makes a grep that matches
+        # nothing fail the whole pipeline, and set -e then ends the probe
+        # right where it had the most to say.
         cols=$(sqlite3 "$path" "SELECT name FROM pragma_table_info('$t');" 2>/dev/null \
-          | grep -i key | tr '\n' ' ')
+          | { grep -i key || true; } | tr '\n' ' ')
         [ -n "$cols" ] && printf '        key-ish columns: %s\n' "$cols"
       done <<< "$tables"
     else
-      printf '  %s :: %s\n' "$domain" "$rel"
+      local size hex
+      size=$(wc -c <"$path" | tr -d ' ')
+      hex=$({ LC_ALL=C grep -oaE '[0-9a-fA-F]{32}' "$path" 2>/dev/null || true; } \
+        | sort -u | wc -l | tr -d ' ')
+      # An `[ ... ] && ...` that comes out false would end the whole probe
+      # under `set -e`, which is exactly what it did: the listing stopped
+      # after the first entry whose count was zero.
+      printf '  %s :: %s (%s bytes' "$domain" "$rel" "$size"
+      if [ "$hex" -gt 0 ]; then
+        printf ', %s key-shaped strings' "$hex"
+      fi
+      printf ')\n'
     fi
   done < <(sqlite3 "$backup/Manifest.db" \
     "SELECT fileID || '|' || domain || '|' || relativePath FROM Files
-      WHERE (domain LIKE '%powerview%' OR domain LIKE '%hunterdouglas%')
-        AND flags = 1;" 2>/dev/null)
+      WHERE domain LIKE '%powerview%' OR domain LIKE '%hunterdouglas%';" 2>/dev/null)
 
   printf '\n'
   bold "Paste the above back and the search can be pointed at the right table."
