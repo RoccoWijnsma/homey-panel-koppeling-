@@ -32,6 +32,31 @@ need() {
 
 # --- pick a backup ------------------------------------------------------------
 
+# macOS protects the backup folder with TCC: the folder itself is visible, but
+# listing what is inside it needs Full Disk Access. A glob over an unreadable
+# directory quietly expands to nothing, which is indistinguishable from the
+# folder being empty - so without this check the script tells someone who just
+# made a backup that they have none. Test the read for real rather than
+# trusting `-r`, which reports on the file mode and not on TCC.
+assert_backup_root_readable() {
+  ls "$1" >/dev/null 2>&1 && return 0
+
+  cat >&2 <<'DENIED'
+macOS will not let this terminal read the backup folder.
+
+The folder is there; its contents are protected. Grant the terminal Full Disk
+Access, then run this again:
+
+  System Settings -> Privacy & Security -> Full Disk Access
+  Switch on Terminal (or iTerm, or whichever one you are using)
+  Quit that app completely and reopen it - the change only takes effect on
+  a fresh launch
+
+This says nothing about whether a backup exists; it is only about permission.
+DENIED
+  exit 1
+}
+
 newest_backup() {
   local newest='' dir
   for dir in "$BACKUP_ROOT"/*/; do
@@ -123,6 +148,7 @@ find_database() {
 # --- report -------------------------------------------------------------------
 
 list_backups() {
+  assert_backup_root_readable "$BACKUP_ROOT"
   bold "Backups in $BACKUP_ROOT"
   local dir
   for dir in "$BACKUP_ROOT"/*/; do
@@ -192,7 +218,19 @@ else
   # Only the search needs the standard location; a backup named outright may
   # live anywhere, including a copy pulled off another disk.
   [ -d "$BACKUP_ROOT" ] || fail "No backup folder at $BACKUP_ROOT. Make a backup in Finder first."
-  backup=$(newest_backup) || fail "No backups found. Make one in Finder first."
+  assert_backup_root_readable "$BACKUP_ROOT"
+  backup=$(newest_backup) || fail "$(cat <<'NONE'
+No backups found.
+
+The folder is readable and empty of backups, so this is not a permissions
+problem. Either no local backup has been made yet, or the phone is set to back
+up to iCloud rather than to this Mac - in Finder, that is the "Back up all of
+the data on your iPhone to this Mac" option.
+
+A backup that is still running has no Manifest.db yet and will not be seen
+until it finishes.
+NONE
+)"
 fi
 
 bold "Backup: $(device_name "$backup"), $(backup_date "$backup")"
