@@ -1,0 +1,45 @@
+{
+  "device": {
+    "searching": "Looking for this shade over Bluetooth…",
+    "out_of_range": "Out of Bluetooth range. Homey has not heard this shade for a while.",
+    "no_reading": "Homey has not heard this shade broadcast its position yet, so it does not know where the other axis is. Try again in a minute.",
+    "needs_home_key": "This shade belongs to a PowerView home and ignores commands without its home key. Add the key in the app settings.",
+    "closed": "Closed",
+    "open": "Open"
+  },
+  "pair": {
+    "home_key": {
+      "intro": "A shade that has been added to a home in the PowerView app only acts on encrypted commands. One key covers every shade in that home, so this is a one-time step. A shade that has never been added to a home works without a key.",
+      "have_key": "A home key is set",
+      "no_key": "No home key set yet",
+      "tab_manual": "Paste a key",
+      "tab_gateway": "Read from gateway",
+      "key_label": "Home key",
+      "key_hint": "32 hexadecimal characters. Spaces, colons and \\x escapes are ignored, so paste it in whatever shape you have it.",
+      "gateway_label": "Gateway address",
+      "gateway_hint": "Hostname or IP of a PowerView Gen 3 gateway on this network. Homey asks it for the key, which takes up to half a minute while the gateway opens its own Bluetooth connections.",
+      "skip": "Skip",
+      "continue": "Continue",
+      "save": "Save and continue"
+    },
+    "errors": {
+      "invalid_key": "That is not a 16-byte key. It should be 32 hexadecimal characters.",
+      "no_gateway": "Fill in the gateway's hostname or IP address first.",
+      "gateway_failed": "Could not read the key from the gateway: {{reason}}"
+    }
+  },
+  "settings": {
+    "heading": "PowerView home key",
+    "intro": "Shades that belong to a home in the PowerView app only act on encrypted commands. One key covers the whole home. Leave it empty if your shades have never been added to a home.",
+    "key_label": "Home key",
+    "key_hint": "32 hexadecimal characters. Leave empty to remove the key.",
+    "poll_label": "Scan interval",
+    "poll_hint": "How often Homey listens for position and battery updates, in seconds. Scanning occupies the Bluetooth radio, so shorter is not better: 60 seconds suits most homes.",
+    "save": "Save",
+    "saved": "Saved.",
+    "invalid_key": "That is not a 16-byte key. It should be 32 hexadecimal characters.",
+    "keystream_label": "Keystream",
+    "keystream_hint": "Hex, at least 13 bytes. An alternative to the home key for installs where the key cannot be had - run scripts/derive-keystream.js against the PowerView app's own BLE log. Used in preference to the key when both are set.",
+    "invalid_keystream": "That is not a usable keystream. It should be hex, at least 13 bytes (26 characters)."
+  }
+}

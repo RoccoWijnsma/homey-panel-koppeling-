@@ -1,0 +1,217 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PowerView BLE</title>
+    <script type="text/javascript" src="/homey.js" data-origin="settings"></script>
+    <style>
+      body {
+        margin: 0;
+        padding: 20px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        font-size: 14px;
+        color: #17202a;
+        background: #f5f6f8;
+      }
+
+      h2 {
+        margin: 0 0 6px;
+        font-size: 16px;
+      }
+
+      section {
+        background: #fff;
+        border-radius: 10px;
+        padding: 18px;
+        margin-bottom: 16px;
+      }
+
+      p {
+        margin: 0 0 14px;
+        line-height: 1.55;
+        color: #4b5563;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 6px;
+        font-weight: 600;
+        font-size: 13px;
+      }
+
+      input {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 10px;
+        border: 1px solid #d5d8dd;
+        border-radius: 7px;
+        font: inherit;
+      }
+
+      input#home-key,
+      input#keystream {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      }
+
+      .row + .row {
+        margin-top: 16px;
+      }
+
+      .hint {
+        margin: 8px 0 0;
+        font-size: 12px;
+        color: #6b7280;
+      }
+
+      button {
+        margin-top: 18px;
+        padding: 11px 18px;
+        border: none;
+        border-radius: 7px;
+        background: #0f2b46;
+        color: #fff;
+        font: inherit;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      .status {
+        margin-top: 14px;
+        font-size: 13px;
+        font-weight: 600;
+        min-height: 18px;
+      }
+
+      .status--ok {
+        color: #17632c;
+      }
+
+      .status--error {
+        color: #b3261e;
+      }
+    </style>
+  </head>
+
+  <body>
+    <section>
+      <h2 id="key-heading"></h2>
+      <p id="key-intro"></p>
+
+      <div class="row">
+        <label for="home-key" id="key-label"></label>
+        <input id="home-key" type="text" spellcheck="false" autocomplete="off" placeholder="0123456789abcdef0123456789abcdef" />
+        <p class="hint" id="key-hint"></p>
+      </div>
+
+      <div class="row">
+        <label for="keystream" id="keystream-label"></label>
+        <input id="keystream" type="text" spellcheck="false" autocomplete="off" placeholder="27ec9a4f13b8005ce1220d7f6a34c9de" />
+        <p class="hint" id="keystream-hint"></p>
+      </div>
+
+      <div class="row">
+        <label for="poll-interval" id="poll-label"></label>
+        <input id="poll-interval" type="number" min="15" max="3600" step="5" />
+        <p class="hint" id="poll-hint"></p>
+      </div>
+
+      <button type="button" id="save"></button>
+      <div class="status" id="status"></div>
+    </section>
+
+    <script type="text/javascript">
+      /* global Homey */
+      function onHomeyReady(Homey) {
+        const el = (id) => document.getElementById(id);
+        const status = el('status');
+
+        const strings = {
+          'key-heading': 'settings.heading',
+          'key-intro': 'settings.intro',
+          'key-label': 'settings.key_label',
+          'key-hint': 'settings.key_hint',
+          'keystream-label': 'settings.keystream_label',
+          'keystream-hint': 'settings.keystream_hint',
+          'poll-label': 'settings.poll_label',
+          'poll-hint': 'settings.poll_hint',
+          save: 'settings.save',
+        };
+        for (const [id, key] of Object.entries(strings)) {
+          el(id).textContent = Homey.__(key);
+        }
+
+        function show(message, ok) {
+          status.textContent = message;
+          status.className = `status ${ok ? 'status--ok' : 'status--error'}`;
+        }
+
+        Homey.get('home_key', (err, value) => {
+          if (!err && value) el('home-key').value = value;
+        });
+        Homey.get('keystream', (err, value) => {
+          if (!err && value) el('keystream').value = value;
+        });
+        Homey.get('poll_interval', (err, value) => {
+          el('poll-interval').value = !err && value ? value : 60;
+        });
+
+        el('save').addEventListener('click', () => {
+          const raw = el('home-key').value.trim();
+          const key = raw.toLowerCase().replace(/\\x/g, '').replace(/[\s:-]/g, '');
+
+          if (key && !/^[0-9a-f]{32}$/.test(key)) {
+            show(Homey.__('settings.invalid_key'), false);
+            return;
+          }
+
+          const rawStream = el('keystream').value.trim();
+          const stream = rawStream.toLowerCase().replace(/\\x/g, '').replace(/[\s:-]/g, '');
+
+          // At least 13 bytes: shorter cannot cover a position command.
+          if (stream && !/^([0-9a-f]{2}){13,}$/.test(stream)) {
+            show(Homey.__('settings.invalid_keystream'), false);
+            return;
+          }
+
+          const interval = Math.max(15, Math.min(3600, Number(el('poll-interval').value) || 60));
+          el('poll-interval').value = interval;
+
+          const finish = (err) => {
+            if (err) {
+              show(err.message || String(err), false);
+              return;
+            }
+            show(Homey.__('settings.saved'), true);
+          };
+
+          const saveKeystream = (err) => {
+            if (err) {
+              finish(err);
+              return;
+            }
+            if (stream) {
+              Homey.set('keystream', stream, finish);
+            } else {
+              Homey.unset('keystream', finish);
+            }
+          };
+
+          Homey.set('poll_interval', interval, (intervalErr) => {
+            if (intervalErr) {
+              finish(intervalErr);
+              return;
+            }
+            if (key) {
+              Homey.set('home_key', key, saveKeystream);
+            } else {
+              Homey.unset('home_key', saveKeystream);
+            }
+          });
+        });
+
+        Homey.ready();
+      }
+    </script>
+  </body>
+</html>
