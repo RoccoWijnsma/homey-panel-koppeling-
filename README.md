@@ -128,6 +128,16 @@ homey app install
 `homey app run` instead of `install` runs it from your machine with live logs,
 which is the better way to see what is going on the first time.
 
+Afterwards, to pick up a new build:
+
+```bash
+./scripts/run.sh             # live, with logs (Ctrl-C stops the app)
+./scripts/run.sh --install   # install it on the Homey for good
+```
+
+That pulls, checks Docker is awake, and starts the CLI from the right
+directory - the three things that otherwise have to go right by hand.
+
 ## Adding shades
 
 *Devices → Add device → PowerView BLE → PowerView Gen 3 Shade.*
