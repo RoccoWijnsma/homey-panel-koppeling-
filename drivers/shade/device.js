@@ -120,6 +120,7 @@ class ShadeDevice extends Homey.Device {
    */
   _registerListeners() {
     const listeners = {
+      powerview_open: (value) => this._setLift(value ? 1 : 0),
       windowcoverings_set: (value) => this._setLift(value),
       powerview_secondary: (value) => this._setSecondary(value),
       windowcoverings_tilt_set: (value) => this._setTilt(value),
@@ -198,6 +199,25 @@ class ShadeDevice extends Homey.Device {
    * @param {number} value 0..1
    * @returns {boolean}
    */
+  /**
+   * Put the position in words at the ends and in percent in between.
+   *
+   * Homey renders a number capability as a bare percentage, so "0%" is what a
+   * closed shade would otherwise say - accurate, and not how anyone describes
+   * a closed blind.
+   *
+   * @param {number|null} position 0..1, or null when this shade has no lift axis.
+   * @returns {string|null}
+   */
+  _describePosition(position) {
+    if (position === null) return null;
+
+    const percent = toPercent(position);
+    if (percent === 0) return this.homey.__('device.closed');
+    if (percent === 100) return this.homey.__('device.open');
+    return `${percent}%`;
+  }
+
   _alreadyAt(read, value) {
     if (!this._decoded) return false;
     if (Date.now() - this._lastSeen > FRESH_READING_MS) return false;
@@ -351,8 +371,12 @@ class ShadeDevice extends Homey.Device {
    * @param {object} decoded
    */
   _publish(decoded) {
+    const position = readPosition(decoded, this._capabilities);
     const values = {
-      windowcoverings_set: readPosition(decoded, this._capabilities),
+      // Open the way a dimmed light is on: anything off the end stop counts.
+      powerview_open: position === null ? null : position > 0,
+      powerview_status: this._describePosition(position),
+      windowcoverings_set: position,
       powerview_secondary: readSecondary(decoded, this._capabilities),
       windowcoverings_tilt_set: readTilt(decoded, this._capabilities),
       windowcoverings_state: readState(decoded),

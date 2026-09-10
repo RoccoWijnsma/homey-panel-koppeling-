@@ -38,10 +38,23 @@ describe('the shade type table', () => {
 describe('the capabilities a shade is created with', () => {
   it('gives a plain shade a position, a state and a battery', () => {
     assert.deepEqual(getHomeyCapabilities(6), [
+      'powerview_open',
+      'powerview_status',
       'windowcoverings_set',
       'windowcoverings_state',
       'measure_battery',
     ]);
+  });
+
+  it('offers a one-tap open and a spelled-out position wherever it lifts', () => {
+    assert.ok(getHomeyCapabilities(6).includes('powerview_open'));
+    assert.ok(getHomeyCapabilities(6).includes('powerview_status'));
+  });
+
+  it('offers neither to a shade that only tilts', () => {
+    // There is no lift axis to open, and nothing to describe as a percentage.
+    assert.ok(!getHomeyCapabilities(39).includes('powerview_open'));
+    assert.ok(!getHomeyCapabilities(39).includes('powerview_status'));
   });
 
   it('adds a tilt control only where the shade tilts', () => {
@@ -62,11 +75,15 @@ describe('the capabilities a shade is created with', () => {
   });
 
   it('only ever names capabilities the app declares', () => {
+    // Read the manifest rather than restating it: a hand-kept list here would
+    // agree with itself while the app shipped a capability it never declared,
+    // which is a device that fails to add it at runtime.
+    const manifest = require('../app.json');
     const declared = new Set([
+      ...Object.keys(manifest.capabilities),
       'windowcoverings_set',
       'windowcoverings_state',
       'windowcoverings_tilt_set',
-      'powerview_secondary',
       'measure_battery',
     ]);
 

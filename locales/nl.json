@@ -3,7 +3,9 @@
     "searching": "Zoeken naar dit product via Bluetooth…",
     "out_of_range": "Buiten Bluetooth-bereik. Homey heeft dit product al een tijd niet gehoord.",
     "no_reading": "Homey heeft dit product zijn positie nog niet horen uitzenden en weet dus niet waar de andere as staat. Probeer het over een minuut opnieuw.",
-    "needs_home_key": "Dit product hoort bij een PowerView-huis en negeert opdrachten zonder de home key. Vul de sleutel in bij de app-instellingen."
+    "needs_home_key": "Dit product hoort bij een PowerView-huis en negeert opdrachten zonder de home key. Vul de sleutel in bij de app-instellingen.",
+    "closed": "Dicht",
+    "open": "Open"
   },
   "pair": {
     "home_key": {

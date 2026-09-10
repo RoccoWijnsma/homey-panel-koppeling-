@@ -3,7 +3,9 @@
     "searching": "Looking for this shade over Bluetooth…",
     "out_of_range": "Out of Bluetooth range. Homey has not heard this shade for a while.",
     "no_reading": "Homey has not heard this shade broadcast its position yet, so it does not know where the other axis is. Try again in a minute.",
-    "needs_home_key": "This shade belongs to a PowerView home and ignores commands without its home key. Add the key in the app settings."
+    "needs_home_key": "This shade belongs to a PowerView home and ignores commands without its home key. Add the key in the app settings.",
+    "closed": "Closed",
+    "open": "Open"
   },
   "pair": {
     "home_key": {

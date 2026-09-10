@@ -33,6 +33,36 @@
     "xlarge": "/assets/images/xlarge.png"
   },
   "capabilities": {
+    "powerview_open": {
+      "type": "boolean",
+      "title": {
+        "en": "Open",
+        "nl": "Open"
+      },
+      "hint": {
+        "en": "Open or close the shade in one tap. Reads as open whenever the shade is not fully closed, the way a dimmed light still reads as on.",
+        "nl": "Open of sluit het product met \u00e9\u00e9n tik. Staat op open zodra het product niet volledig gesloten is, zoals een gedimde lamp ook als aan geldt."
+      },
+      "uiComponent": "toggle",
+      "uiQuickAction": true,
+      "getable": true,
+      "setable": true,
+      "insights": true
+    },
+    "powerview_status": {
+      "type": "string",
+      "title": {
+        "en": "Position",
+        "nl": "Stand"
+      },
+      "hint": {
+        "en": "Reads Closed at 0%, Open at 100%, and the percentage anywhere in between.",
+        "nl": "Toont Dicht bij 0%, Open bij 100%, en het percentage daartussenin."
+      },
+      "uiComponent": "sensor",
+      "getable": true,
+      "setable": false
+    },
     "powerview_secondary": {
       "type": "number",
       "title": {
