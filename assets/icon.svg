@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Energy Insights">
+  <title>Homey Energy Insights</title>
+  <!-- Solar arc: the production curve over the day. -->
+  <path d="M6 45C12 24 24 16 32 16s20 8 26 29" fill="none" stroke="#EDA100" stroke-width="4"
+    stroke-linecap="round" />
+  <!-- Household usage, with the step of an appliance switching on. -->
+  <path d="M5 50h16l4-19h14l4 19h16" fill="none" stroke="#2A78D6" stroke-width="4.5"
+    stroke-linecap="round" stroke-linejoin="round" />
+  <!-- Annotation: the guide line and the diamond that mark an explained peak. -->
+  <path d="M32 10v20" stroke="#E34948" stroke-width="2.5" stroke-linecap="round"
+    stroke-dasharray="3 4" opacity="0.85" />
+  <path d="M32 3.5l6 6-6 6-6-6z" fill="#E34948" />
+</svg>

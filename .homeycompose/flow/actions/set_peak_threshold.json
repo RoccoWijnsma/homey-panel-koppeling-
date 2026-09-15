@@ -1,0 +1,25 @@
+{
+  "title": {
+    "en": "Set the power peak threshold",
+    "nl": "Stel de piekdrempel in"
+  },
+  "titleFormatted": {
+    "en": "Set the power peak threshold to [[watts]] W",
+    "nl": "Stel de piekdrempel in op [[watts]] W"
+  },
+  "hint": {
+    "en": "Changes the threshold used for peak detection and peak markers, for example to a lower value at night.",
+    "nl": "Wijzigt de drempel voor piekdetectie en piekmarkeringen, bijvoorbeeld naar een lagere waarde 's nachts."
+  },
+  "args": [
+    {
+      "type": "number",
+      "name": "watts",
+      "title": { "en": "Threshold (W)", "nl": "Drempel (W)" },
+      "min": 100,
+      "max": 100000,
+      "step": 50,
+      "placeholder": { "en": "3000", "nl": "3000" }
+    }
+  ]
+}

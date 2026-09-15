@@ -1,0 +1,24 @@
+{
+  "title": {
+    "en": "A new solar production peak was reached",
+    "nl": "Een nieuwe piek in zonneproductie is bereikt"
+  },
+  "hint": {
+    "en": "Triggers when solar production reaches a new maximum for today. A marker is added to the Energy Timeline as well.",
+    "nl": "Wordt geactiveerd wanneer de zonneproductie een nieuw maximum voor vandaag bereikt. Er wordt ook een markering op de energie-tijdlijn geplaatst."
+  },
+  "tokens": [
+    {
+      "name": "watts",
+      "type": "number",
+      "title": { "en": "Solar peak (W)", "nl": "Zonnepiek (W)" },
+      "example": 3650
+    },
+    {
+      "name": "previous",
+      "type": "number",
+      "title": { "en": "Previous peak today (W)", "nl": "Vorige piek vandaag (W)" },
+      "example": 3100
+    }
+  ]
+}

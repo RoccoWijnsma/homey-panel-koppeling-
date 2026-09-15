@@ -1,0 +1,43 @@
+{
+  "title": {
+    "en": "Add a marker to the Energy Timeline",
+    "nl": "Voeg een markering toe aan de energie-tijdlijn"
+  },
+  "titleFormatted": {
+    "en": "Add marker [[label]] to the Energy Timeline in [[color]]",
+    "nl": "Voeg markering [[label]] toe aan de energie-tijdlijn in [[color]]"
+  },
+  "hint": {
+    "en": "Places a custom, labelled marker on the timeline at the current time, so you can annotate what happened yourself.",
+    "nl": "Plaatst een eigen markering met label op de tijdlijn op het huidige moment, zodat je zelf kunt aantekenen wat er gebeurde."
+  },
+  "args": [
+    {
+      "type": "text",
+      "name": "label",
+      "title": { "en": "Label", "nl": "Label" },
+      "placeholder": { "en": "Dishwasher eco programme", "nl": "Vaatwasser eco-programma" }
+    },
+    {
+      "type": "dropdown",
+      "name": "color",
+      "title": { "en": "Colour", "nl": "Kleur" },
+      "value": "grey",
+      "values": [
+        { "id": "grey", "title": { "en": "Neutral", "nl": "Neutraal" } },
+        { "id": "blue", "title": { "en": "Blue (usage)", "nl": "Blauw (verbruik)" } },
+        { "id": "amber", "title": { "en": "Amber (solar)", "nl": "Amber (zon)" } },
+        { "id": "teal", "title": { "en": "Teal (grid)", "nl": "Turquoise (net)" } },
+        { "id": "red", "title": { "en": "Red (peak)", "nl": "Rood (piek)" } }
+      ]
+    }
+  ],
+  "tokens": [
+    {
+      "name": "watts",
+      "type": "number",
+      "title": { "en": "Power at marker (W)", "nl": "Vermogen bij markering (W)" },
+      "example": 1830
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "name": "com.homey.energyinsights",
+  "version": "1.0.0",
+  "description": "Real-time energy visualisation dashboard for Homey with annotated power timelines.",
+  "main": "app.js",
+  "private": true,
+  "license": "MIT",
+  "engines": {
+    "node": ">=16"
+  },
+  "scripts": {
+    "start": "homey app run",
+    "build": "homey app build",
+    "validate": "homey app validate --level publish",
+    "test": "node --test test/*.test.js",
+    "preview": "node tools/preview/dashboard.js && node tools/preview/interactions.js",
+    "assets": "node tools/preview/assets.js && node tools/preview/widget.js"
+  },
+  "dependencies": {
+    "homey-api": "^3.9.0"
+  },
+  "devDependencies": {
+    "homey": "^4.5.0",
+    "playwright-core": "^1.63.0"
+  }
+}

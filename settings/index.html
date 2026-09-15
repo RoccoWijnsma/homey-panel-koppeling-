@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Homey Energy Insights</title>
+  <link rel="stylesheet" href="./style.css">
+  <script type="text/javascript" src="/homey.js" data-origin="settings"></script>
+</head>
+
+<body>
+  <main class="ei">
+
+    <header class="ei-header">
+      <div>
+        <h1 class="ei-title" data-i18n="settings.title">Energy Timeline</h1>
+        <p class="ei-subtitle" data-i18n="settings.subtitle">
+          Live power, solar and net grid power with annotated events
+        </p>
+      </div>
+      <span class="ei-status-dot" id="connection" data-state="stale" title="Connection"></span>
+    </header>
+
+    <nav class="ei-tabs" role="tablist">
+      <button class="ei-tab" role="tab" id="tab-timeline" aria-controls="panel-timeline" aria-selected="true"
+        data-i18n="settings.tabs.timeline">Timeline</button>
+      <button class="ei-tab" role="tab" id="tab-devices" aria-controls="panel-devices" aria-selected="false"
+        data-i18n="settings.tabs.devices">Devices</button>
+      <button class="ei-tab" role="tab" id="tab-settings" aria-controls="panel-settings" aria-selected="false"
+        data-i18n="settings.tabs.settings">Settings</button>
+    </nav>
+
+    <!-- ------------------------------------------------------------ timeline -->
+    <section class="ei-panel" id="panel-timeline" role="tabpanel" aria-labelledby="tab-timeline">
+
+      <div class="ei-stats" id="stats">
+        <div class="ei-stat">
+          <div class="ei-stat-label"><i class="ei-swatch" data-series="usage"></i>
+            <span data-i18n="settings.stats.usage">Power usage</span>
+          </div>
+          <div class="ei-stat-value" id="stat-usage">–</div>
+          <div class="ei-stat-sub" id="stat-usage-sub">&nbsp;</div>
+        </div>
+        <div class="ei-stat">
+          <div class="ei-stat-label"><i class="ei-swatch" data-series="solar"></i>
+            <span data-i18n="settings.stats.solar">Solar</span>
+          </div>
+          <div class="ei-stat-value" id="stat-solar">–</div>
+          <div class="ei-stat-sub" id="stat-solar-sub">&nbsp;</div>
+        </div>
+        <div class="ei-stat">
+          <div class="ei-stat-label"><i class="ei-swatch" data-series="net"></i>
+            <span data-i18n="settings.stats.net">Net grid</span>
+          </div>
+          <div class="ei-stat-value" id="stat-net">–</div>
+          <div class="ei-stat-sub" id="stat-net-sub">&nbsp;</div>
+        </div>
+        <div class="ei-stat">
+          <div class="ei-stat-label"><i class="ei-swatch" data-series="peak"></i>
+            <span data-i18n="settings.stats.peakToday">Peak today</span>
+          </div>
+          <div class="ei-stat-value" id="stat-peak">–</div>
+          <div class="ei-stat-sub" id="stat-peak-sub">&nbsp;</div>
+        </div>
+        <div class="ei-stat">
+          <div class="ei-stat-label">
+            <span data-i18n="settings.stats.selfSufficiency">Self-sufficiency</span>
+          </div>
+          <div class="ei-stat-value" id="stat-self">–</div>
+          <div class="ei-stat-sub" id="stat-self-sub">&nbsp;</div>
+        </div>
+        <div class="ei-stat">
+          <div class="ei-stat-label">
+            <span data-i18n="settings.stats.feedIn">Feed-in now</span>
+          </div>
+          <div class="ei-stat-value" id="stat-feed">–</div>
+          <div class="ei-stat-sub" id="stat-feed-sub">&nbsp;</div>
+        </div>
+      </div>
+
+      <div class="ei-card">
+        <div class="ei-toolbar">
+          <div class="ei-chips" id="ranges" role="group">
+            <button class="ei-chip" data-range="900000" aria-pressed="true" data-i18n="settings.range.live">15 min</button>
+            <button class="ei-chip" data-range="3600000" aria-pressed="false" data-i18n="settings.range.hour">1 hour</button>
+            <button class="ei-chip" data-range="21600000" aria-pressed="false" data-i18n="settings.range.sixHours">6 hours</button>
+            <button class="ei-chip" data-range="86400000" aria-pressed="false" data-i18n="settings.range.day">24 hours</button>
+          </div>
+          <span class="ei-spacer"></span>
+          <button class="ei-button" data-variant="live" id="follow" aria-pressed="true"
+            data-i18n="settings.actions.follow">Live</button>
+        </div>
+
+        <div class="ei-canvas-wrap">
+          <canvas id="chart" aria-label="Energy timeline chart"></canvas>
+        </div>
+
+        <div class="ei-legend" id="legend">
+          <button class="ei-legend-item" data-series="consumption" aria-pressed="true">
+            <i class="ei-legend-line" data-series="usage"></i>
+            <span data-i18n="settings.legend.usage">Usage</span>
+            <span class="ei-legend-value" id="legend-usage">–</span>
+          </button>
+          <button class="ei-legend-item" data-series="solar" aria-pressed="true">
+            <i class="ei-legend-line" data-series="solar"></i>
+            <span data-i18n="settings.legend.solar">Solar</span>
+            <span class="ei-legend-value" id="legend-solar">–</span>
+          </button>
+          <button class="ei-legend-item" data-series="net" aria-pressed="true">
+            <i class="ei-legend-line" data-series="net"></i>
+            <span data-i18n="settings.legend.net">Net</span>
+            <span class="ei-legend-value" id="legend-net">–</span>
+          </button>
+        </div>
+
+        <p class="ei-hint" id="chart-hint" data-i18n="settings.hint">
+          Drag to scrub through history, scroll or pinch to zoom, tap a marker to read why it is there.
+        </p>
+      </div>
+
+      <div class="ei-card">
+        <h2 class="ei-card-title" data-i18n="settings.legend.markers">Events</h2>
+        <ul class="ei-list" id="events"></ul>
+        <div class="ei-actions">
+          <input type="text" id="marker-label" maxlength="120" placeholder="Add a note to the timeline…">
+          <button class="ei-button" data-variant="primary" id="add-marker"
+            data-i18n="settings.actions.addMarker">Add marker</button>
+          <button class="ei-button" id="clear-markers" data-i18n="settings.actions.clearMarkers">Clear</button>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ------------------------------------------------------------- devices -->
+    <section class="ei-panel" id="panel-devices" role="tabpanel" aria-labelledby="tab-devices" hidden>
+      <div class="ei-card">
+        <h2 class="ei-card-title" data-i18n="settings.tabs.devices">Devices</h2>
+        <p class="ei-hint" style="margin-top:0">
+          Roles decide how a device counts: consumers add to usage, solar counts as production, a grid
+          meter becomes the source of truth for net power.
+        </p>
+        <div id="devices"></div>
+      </div>
+    </section>
+
+    <!-- ------------------------------------------------------------ settings -->
+    <section class="ei-panel" id="panel-settings" role="tabpanel" aria-labelledby="tab-settings" hidden>
+      <div class="ei-card">
+        <h2 class="ei-card-title" data-i18n="settings.tabs.settings">Settings</h2>
+
+        <div class="ei-field">
+          <label for="cfg-peakThreshold" data-i18n="settings.config.peakThreshold">Peak threshold (W)</label>
+          <input type="number" id="cfg-peakThreshold" min="50" max="100000" step="50">
+        </div>
+        <div class="ei-field">
+          <label for="cfg-peakDelta" data-i18n="settings.config.peakDelta">Minimum rise for a peak (W)</label>
+          <input type="number" id="cfg-peakDelta" min="0" max="100000" step="50">
+        </div>
+        <div class="ei-field">
+          <label for="cfg-sampleInterval" data-i18n="settings.config.sampleInterval">Sample interval (seconds)</label>
+          <input type="number" id="cfg-sampleInterval" min="2" max="60" step="1">
+        </div>
+        <div class="ei-field">
+          <label for="cfg-minMarkerPower" data-i18n="settings.config.minMarkerPower">Ignore devices below (W)</label>
+          <input type="number" id="cfg-minMarkerPower" min="0" max="100000" step="10">
+        </div>
+        <div class="ei-field">
+          <label for="cfg-markerRetentionHours" data-i18n="settings.config.markerRetention">Keep markers for (hours)</label>
+          <input type="number" id="cfg-markerRetentionHours" min="1" max="168" step="1">
+        </div>
+        <div class="ei-field">
+          <label for="cfg-trackDeviceSwitches" data-i18n="settings.config.trackDeviceSwitches">
+            Add markers for device on/off</label>
+          <input type="checkbox" id="cfg-trackDeviceSwitches">
+        </div>
+        <div class="ei-field">
+          <label for="cfg-trackSolarEvents" data-i18n="settings.config.trackSolarEvents">
+            Add markers for solar events</label>
+          <input type="checkbox" id="cfg-trackSolarEvents">
+        </div>
+
+        <div class="ei-actions">
+          <button class="ei-button" data-variant="primary" id="save-config"
+            data-i18n="settings.actions.save">Save</button>
+        </div>
+      </div>
+
+      <div class="ei-card">
+        <h2 class="ei-card-title">Diagnostics</h2>
+        <div id="diagnostics" class="ei-stat-sub">–</div>
+      </div>
+    </section>
+
+  </main>
+
+  <div class="ei-toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="./timeline-chart.js"></script>
+  <script src="./dashboard.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,841 @@
+{
+  "_comment": "This file is generated. Please edit .homeycompose/app.json instead.",
+  "id": "com.homey.energyinsights",
+  "version": "1.0.0",
+  "compatibility": ">=12.2.0",
+  "sdk": 3,
+  "platforms": [
+    "local"
+  ],
+  "name": {
+    "en": "Homey Energy Insights",
+    "nl": "Homey Energy Insights"
+  },
+  "description": {
+    "en": "A real-time energy dashboard that plots live power usage, solar production and net power on one annotated timeline, and explains why every peak happened.",
+    "nl": "Een realtime energiedashboard dat live verbruik, zonneopbrengst en netvermogen op één geannoteerde tijdlijn tekent en uitlegt waaróm elke piek ontstond."
+  },
+  "category": [
+    "energy"
+  ],
+  "brandColor": "#F5A623",
+  "tags": {
+    "en": [
+      "energy",
+      "power",
+      "solar",
+      "insights",
+      "dashboard",
+      "timeline",
+      "peak"
+    ],
+    "nl": [
+      "energie",
+      "vermogen",
+      "zonnepanelen",
+      "inzicht",
+      "dashboard",
+      "tijdlijn",
+      "piek"
+    ]
+  },
+  "permissions": [
+    "homey:manager:api"
+  ],
+  "images": {
+    "small": "/assets/images/small.png",
+    "large": "/assets/images/large.png",
+    "xlarge": "/assets/images/xlarge.png"
+  },
+  "author": {
+    "name": "Rocco Wijnsma"
+  },
+  "contributors": {
+    "developers": [
+      {
+        "name": "Rocco Wijnsma"
+      }
+    ]
+  },
+  "source": "https://github.com/RoccoWijnsma/homey-panel-koppeling-",
+  "bugs": {
+    "url": "https://github.com/RoccoWijnsma/homey-panel-koppeling-/issues"
+  },
+  "api": {
+    "getState": {
+      "method": "GET",
+      "path": "/state"
+    },
+    "getTimeline": {
+      "method": "GET",
+      "path": "/timeline"
+    },
+    "getMarkers": {
+      "method": "GET",
+      "path": "/markers"
+    },
+    "addMarker": {
+      "method": "POST",
+      "path": "/markers"
+    },
+    "deleteMarker": {
+      "method": "DELETE",
+      "path": "/markers/:id"
+    },
+    "clearMarkers": {
+      "method": "DELETE",
+      "path": "/markers"
+    },
+    "getDevices": {
+      "method": "GET",
+      "path": "/devices"
+    },
+    "setDeviceRole": {
+      "method": "PUT",
+      "path": "/devices/:id/role"
+    },
+    "getConfig": {
+      "method": "GET",
+      "path": "/config"
+    },
+    "setConfig": {
+      "method": "PUT",
+      "path": "/config"
+    },
+    "getDiagnostics": {
+      "method": "GET",
+      "path": "/diagnostics"
+    }
+  },
+  "flow": {
+    "triggers": [
+      {
+        "title": {
+          "en": "A device caused a power spike",
+          "nl": "Een apparaat veroorzaakte een vermogenspiek"
+        },
+        "titleFormatted": {
+          "en": "Device [[device]] caused a power spike",
+          "nl": "Apparaat [[device]] veroorzaakte een vermogenspiek"
+        },
+        "hint": {
+          "en": "Triggers when the app attributes a power spike to a specific device. Pick 'Any device' to trigger for every attributed spike.",
+          "nl": "Wordt geactiveerd wanneer de app een vermogenspiek aan een specifiek apparaat toeschrijft. Kies 'Elk apparaat' om bij elke toegeschreven piek te triggeren."
+        },
+        "args": [
+          {
+            "type": "autocomplete",
+            "name": "device",
+            "title": {
+              "en": "Device",
+              "nl": "Apparaat"
+            },
+            "placeholder": {
+              "en": "Which device?",
+              "nl": "Welk apparaat?"
+            }
+          }
+        ],
+        "tokens": [
+          {
+            "name": "device",
+            "type": "string",
+            "title": {
+              "en": "Device",
+              "nl": "Apparaat"
+            },
+            "example": {
+              "en": "EV Charger",
+              "nl": "Laadpaal"
+            }
+          },
+          {
+            "name": "delta",
+            "type": "number",
+            "title": {
+              "en": "Power increase (W)",
+              "nl": "Vermogenstoename (W)"
+            },
+            "example": 2300
+          },
+          {
+            "name": "watts",
+            "type": "number",
+            "title": {
+              "en": "Total power (W)",
+              "nl": "Totaal vermogen (W)"
+            },
+            "example": 4210
+          },
+          {
+            "name": "share",
+            "type": "number",
+            "title": {
+              "en": "Share of the spike (%)",
+              "nl": "Aandeel in de piek (%)"
+            },
+            "example": 78
+          },
+          {
+            "name": "reason",
+            "type": "string",
+            "title": {
+              "en": "Why",
+              "nl": "Waarom"
+            },
+            "example": {
+              "en": "Peak caused by EV Charger starting",
+              "nl": "Piek veroorzaakt doordat Laadpaal startte"
+            }
+          }
+        ],
+        "id": "device_caused_spike"
+      },
+      {
+        "title": {
+          "en": "Net feed-in to the grid started",
+          "nl": "Teruglevering aan het net is gestart"
+        },
+        "hint": {
+          "en": "Triggers the moment solar production starts to exceed household consumption, so power flows back to the grid.",
+          "nl": "Wordt geactiveerd zodra de zonneproductie het verbruik overstijgt en er stroom terug het net op gaat."
+        },
+        "tokens": [
+          {
+            "name": "watts",
+            "type": "number",
+            "title": {
+              "en": "Feed-in power (W)",
+              "nl": "Terugleververmogen (W)"
+            },
+            "example": 1240
+          },
+          {
+            "name": "solar",
+            "type": "number",
+            "title": {
+              "en": "Solar production (W)",
+              "nl": "Zonneproductie (W)"
+            },
+            "example": 3100
+          },
+          {
+            "name": "consumption",
+            "type": "number",
+            "title": {
+              "en": "Consumption (W)",
+              "nl": "Verbruik (W)"
+            },
+            "example": 1860
+          }
+        ],
+        "id": "feed_in_started"
+      },
+      {
+        "title": {
+          "en": "A marker was added to the Energy Timeline",
+          "nl": "Er is een markering aan de energie-tijdlijn toegevoegd"
+        },
+        "hint": {
+          "en": "Triggers for every marker placed on the timeline: device switches, solar events, detected peaks and custom markers.",
+          "nl": "Wordt geactiveerd bij elke markering op de tijdlijn: apparaatschakelingen, zonne-events, gedetecteerde pieken en eigen markeringen."
+        },
+        "tokens": [
+          {
+            "name": "label",
+            "type": "string",
+            "title": {
+              "en": "Label",
+              "nl": "Label"
+            },
+            "example": {
+              "en": "Washing Machine turned on",
+              "nl": "Wasmachine ingeschakeld"
+            }
+          },
+          {
+            "name": "type",
+            "type": "string",
+            "title": {
+              "en": "Marker type",
+              "nl": "Type markering"
+            },
+            "example": {
+              "en": "device_on",
+              "nl": "device_on"
+            }
+          },
+          {
+            "name": "watts",
+            "type": "number",
+            "title": {
+              "en": "Power at marker (W)",
+              "nl": "Vermogen bij markering (W)"
+            },
+            "example": 2100
+          }
+        ],
+        "id": "marker_added"
+      },
+      {
+        "title": {
+          "en": "A power peak occurred",
+          "nl": "Er is een vermogenspiek opgetreden"
+        },
+        "titleFormatted": {
+          "en": "A power peak occurred above [[watts]] W",
+          "nl": "Er is een vermogenspiek boven [[watts]] W opgetreden"
+        },
+        "hint": {
+          "en": "Triggers when total household power rises sharply above the given threshold. The 'why' token explains which devices and which solar change caused the peak.",
+          "nl": "Wordt geactiveerd wanneer het totale vermogen scherp boven de ingestelde grens stijgt. De 'waarom'-tag legt uit welke apparaten en welke zonneverandering de piek veroorzaakten."
+        },
+        "args": [
+          {
+            "type": "number",
+            "name": "watts",
+            "title": {
+              "en": "Threshold (W)",
+              "nl": "Drempel (W)"
+            },
+            "min": 0,
+            "max": 100000,
+            "step": 10,
+            "placeholder": {
+              "en": "3000",
+              "nl": "3000"
+            }
+          }
+        ],
+        "tokens": [
+          {
+            "name": "watts",
+            "type": "number",
+            "title": {
+              "en": "Peak power (W)",
+              "nl": "Piekvermogen (W)"
+            },
+            "example": 4210
+          },
+          {
+            "name": "delta",
+            "type": "number",
+            "title": {
+              "en": "Rise (W)",
+              "nl": "Stijging (W)"
+            },
+            "example": 2100
+          },
+          {
+            "name": "device",
+            "type": "string",
+            "title": {
+              "en": "Likely cause",
+              "nl": "Waarschijnlijke oorzaak"
+            },
+            "example": {
+              "en": "Air Conditioning",
+              "nl": "Airconditioning"
+            }
+          },
+          {
+            "name": "reason",
+            "type": "string",
+            "title": {
+              "en": "Why",
+              "nl": "Waarom"
+            },
+            "example": {
+              "en": "Peak caused by Air Conditioning starting while solar yield dropped",
+              "nl": "Piek veroorzaakt doordat Airconditioning startte terwijl de zonneopbrengst daalde"
+            }
+          },
+          {
+            "name": "solar",
+            "type": "number",
+            "title": {
+              "en": "Solar production (W)",
+              "nl": "Zonneproductie (W)"
+            },
+            "example": 820
+          },
+          {
+            "name": "net",
+            "type": "number",
+            "title": {
+              "en": "Net grid power (W)",
+              "nl": "Netto netvermogen (W)"
+            },
+            "example": 3390
+          }
+        ],
+        "id": "power_peak_above"
+      },
+      {
+        "title": {
+          "en": "A new solar production peak was reached",
+          "nl": "Een nieuwe piek in zonneproductie is bereikt"
+        },
+        "hint": {
+          "en": "Triggers when solar production reaches a new maximum for today. A marker is added to the Energy Timeline as well.",
+          "nl": "Wordt geactiveerd wanneer de zonneproductie een nieuw maximum voor vandaag bereikt. Er wordt ook een markering op de energie-tijdlijn geplaatst."
+        },
+        "tokens": [
+          {
+            "name": "watts",
+            "type": "number",
+            "title": {
+              "en": "Solar peak (W)",
+              "nl": "Zonnepiek (W)"
+            },
+            "example": 3650
+          },
+          {
+            "name": "previous",
+            "type": "number",
+            "title": {
+              "en": "Previous peak today (W)",
+              "nl": "Vorige piek vandaag (W)"
+            },
+            "example": 3100
+          }
+        ],
+        "id": "solar_peak_reached"
+      }
+    ],
+    "conditions": [
+      {
+        "title": {
+          "en": "Homey !{{is|is not}} feeding power back to the grid",
+          "nl": "Homey !{{levert|levert geen}} stroom terug aan het net"
+        },
+        "hint": {
+          "en": "True while net power is negative, meaning surplus solar power is exported to the grid.",
+          "nl": "Waar zolang het netto vermogen negatief is, dus wanneer overtollige zonnestroom wordt teruggeleverd."
+        },
+        "id": "is_feeding_in"
+      },
+      {
+        "title": {
+          "en": "A timeline series !{{is|is not}} above a value",
+          "nl": "Een tijdlijnreeks !{{is|is niet}} boven een waarde"
+        },
+        "titleFormatted": {
+          "en": "[[series]] !{{is|is not}} above [[watts]] W",
+          "nl": "[[series]] !{{is|is niet}} boven [[watts]] W"
+        },
+        "hint": {
+          "en": "Compare the live value of one of the three timeline series against a value in Watt.",
+          "nl": "Vergelijk de live waarde van een van de drie tijdlijnreeksen met een waarde in Watt."
+        },
+        "args": [
+          {
+            "type": "dropdown",
+            "name": "series",
+            "title": {
+              "en": "Series",
+              "nl": "Reeks"
+            },
+            "values": [
+              {
+                "id": "consumption",
+                "title": {
+                  "en": "Power usage",
+                  "nl": "Verbruik"
+                }
+              },
+              {
+                "id": "solar",
+                "title": {
+                  "en": "Solar production",
+                  "nl": "Zonneproductie"
+                }
+              },
+              {
+                "id": "net",
+                "title": {
+                  "en": "Net grid power",
+                  "nl": "Netto netvermogen"
+                }
+              }
+            ]
+          },
+          {
+            "type": "number",
+            "name": "watts",
+            "title": {
+              "en": "Value (W)",
+              "nl": "Waarde (W)"
+            },
+            "min": -100000,
+            "max": 100000,
+            "step": 10,
+            "placeholder": {
+              "en": "1000",
+              "nl": "1000"
+            }
+          }
+        ],
+        "id": "series_above"
+      },
+      {
+        "title": {
+          "en": "Power usage !{{is|is not}} higher than solar production",
+          "nl": "Het verbruik !{{is|is niet}} hoger dan de zonneproductie"
+        },
+        "hint": {
+          "en": "True while the household consumes more power than the solar panels are producing, i.e. while power is being imported from the grid.",
+          "nl": "Waar zolang het huis meer verbruikt dan de zonnepanelen opwekken, dus zolang er stroom van het net wordt afgenomen."
+        },
+        "args": [
+          {
+            "type": "number",
+            "name": "margin",
+            "title": {
+              "en": "Margin (W)",
+              "nl": "Marge (W)"
+            },
+            "min": 0,
+            "max": 100000,
+            "step": 10,
+            "value": 0,
+            "placeholder": {
+              "en": "0",
+              "nl": "0"
+            }
+          }
+        ],
+        "titleFormatted": {
+          "en": "Power usage !{{is|is not}} higher than solar production by at least [[margin]] W",
+          "nl": "Het verbruik !{{is|is niet}} minimaal [[margin]] W hoger dan de zonneproductie"
+        },
+        "id": "usage_higher_than_solar"
+      }
+    ],
+    "actions": [
+      {
+        "title": {
+          "en": "Add a marker to the Energy Timeline",
+          "nl": "Voeg een markering toe aan de energie-tijdlijn"
+        },
+        "titleFormatted": {
+          "en": "Add marker [[label]] to the Energy Timeline in [[color]]",
+          "nl": "Voeg markering [[label]] toe aan de energie-tijdlijn in [[color]]"
+        },
+        "hint": {
+          "en": "Places a custom, labelled marker on the timeline at the current time, so you can annotate what happened yourself.",
+          "nl": "Plaatst een eigen markering met label op de tijdlijn op het huidige moment, zodat je zelf kunt aantekenen wat er gebeurde."
+        },
+        "args": [
+          {
+            "type": "text",
+            "name": "label",
+            "title": {
+              "en": "Label",
+              "nl": "Label"
+            },
+            "placeholder": {
+              "en": "Dishwasher eco programme",
+              "nl": "Vaatwasser eco-programma"
+            }
+          },
+          {
+            "type": "dropdown",
+            "name": "color",
+            "title": {
+              "en": "Colour",
+              "nl": "Kleur"
+            },
+            "value": "grey",
+            "values": [
+              {
+                "id": "grey",
+                "title": {
+                  "en": "Neutral",
+                  "nl": "Neutraal"
+                }
+              },
+              {
+                "id": "blue",
+                "title": {
+                  "en": "Blue (usage)",
+                  "nl": "Blauw (verbruik)"
+                }
+              },
+              {
+                "id": "amber",
+                "title": {
+                  "en": "Amber (solar)",
+                  "nl": "Amber (zon)"
+                }
+              },
+              {
+                "id": "teal",
+                "title": {
+                  "en": "Teal (grid)",
+                  "nl": "Turquoise (net)"
+                }
+              },
+              {
+                "id": "red",
+                "title": {
+                  "en": "Red (peak)",
+                  "nl": "Rood (piek)"
+                }
+              }
+            ]
+          }
+        ],
+        "tokens": [
+          {
+            "name": "watts",
+            "type": "number",
+            "title": {
+              "en": "Power at marker (W)",
+              "nl": "Vermogen bij markering (W)"
+            },
+            "example": 1830
+          }
+        ],
+        "id": "add_marker"
+      },
+      {
+        "title": {
+          "en": "Set the power peak threshold",
+          "nl": "Stel de piekdrempel in"
+        },
+        "titleFormatted": {
+          "en": "Set the power peak threshold to [[watts]] W",
+          "nl": "Stel de piekdrempel in op [[watts]] W"
+        },
+        "hint": {
+          "en": "Changes the threshold used for peak detection and peak markers, for example to a lower value at night.",
+          "nl": "Wijzigt de drempel voor piekdetectie en piekmarkeringen, bijvoorbeeld naar een lagere waarde 's nachts."
+        },
+        "args": [
+          {
+            "type": "number",
+            "name": "watts",
+            "title": {
+              "en": "Threshold (W)",
+              "nl": "Drempel (W)"
+            },
+            "min": 100,
+            "max": 100000,
+            "step": 50,
+            "placeholder": {
+              "en": "3000",
+              "nl": "3000"
+            }
+          }
+        ],
+        "id": "set_peak_threshold"
+      }
+    ]
+  },
+  "drivers": [
+    {
+      "name": {
+        "en": "Energy Insights",
+        "nl": "Energy Insights"
+      },
+      "class": "sensor",
+      "platforms": [
+        "local"
+      ],
+      "capabilities": [
+        "measure_power",
+        "measure_power.consumed",
+        "measure_power.solar",
+        "energy_self_sufficiency",
+        "alarm_generic.peak",
+        "energy_peak_reason"
+      ],
+      "capabilitiesOptions": {
+        "measure_power": {
+          "title": {
+            "en": "Net grid power",
+            "nl": "Netto netvermogen"
+          },
+          "insightsTitle": {
+            "en": "Net grid power",
+            "nl": "Netto netvermogen"
+          }
+        },
+        "measure_power.consumed": {
+          "title": {
+            "en": "Power usage",
+            "nl": "Verbruik"
+          },
+          "insightsTitle": {
+            "en": "Power usage",
+            "nl": "Verbruik"
+          }
+        },
+        "measure_power.solar": {
+          "title": {
+            "en": "Solar production",
+            "nl": "Zonneproductie"
+          },
+          "insightsTitle": {
+            "en": "Solar production",
+            "nl": "Zonneproductie"
+          }
+        },
+        "alarm_generic.peak": {
+          "title": {
+            "en": "Power peak",
+            "nl": "Vermogenspiek"
+          },
+          "insightsTitleTrue": {
+            "en": "Power peak started",
+            "nl": "Vermogenspiek gestart"
+          },
+          "insightsTitleFalse": {
+            "en": "Power peak ended",
+            "nl": "Vermogenspiek beëindigd"
+          }
+        }
+      },
+      "images": {
+        "small": "/drivers/energy-insights/assets/images/small.png",
+        "large": "/drivers/energy-insights/assets/images/large.png",
+        "xlarge": "/drivers/energy-insights/assets/images/xlarge.png"
+      },
+      "pair": [
+        {
+          "id": "list_devices",
+          "template": "list_devices",
+          "navigation": {
+            "next": "add_devices"
+          }
+        },
+        {
+          "id": "add_devices",
+          "template": "add_devices"
+        }
+      ],
+      "id": "energy-insights"
+    }
+  ],
+  "widgets": {
+    "energy-timeline": {
+      "name": {
+        "en": "Energy Timeline",
+        "nl": "Energie-tijdlijn"
+      },
+      "height": 240,
+      "settings": [
+        {
+          "id": "range",
+          "type": "dropdown",
+          "title": {
+            "en": "Time range",
+            "nl": "Tijdsbereik"
+          },
+          "value": "3600000",
+          "values": [
+            {
+              "id": "900000",
+              "title": {
+                "en": "15 minutes",
+                "nl": "15 minuten"
+              }
+            },
+            {
+              "id": "3600000",
+              "title": {
+                "en": "1 hour",
+                "nl": "1 uur"
+              }
+            },
+            {
+              "id": "21600000",
+              "title": {
+                "en": "6 hours",
+                "nl": "6 uur"
+              }
+            },
+            {
+              "id": "86400000",
+              "title": {
+                "en": "24 hours",
+                "nl": "24 uur"
+              }
+            }
+          ]
+        },
+        {
+          "id": "showMarkers",
+          "type": "checkbox",
+          "title": {
+            "en": "Show event markers",
+            "nl": "Toon markeringen"
+          },
+          "value": true
+        },
+        {
+          "id": "showNet",
+          "type": "checkbox",
+          "title": {
+            "en": "Show net grid power",
+            "nl": "Toon netto netvermogen"
+          },
+          "value": true
+        }
+      ],
+      "api": {
+        "getTimeline": {
+          "method": "GET",
+          "path": "/timeline"
+        }
+      },
+      "id": "energy-timeline"
+    }
+  },
+  "capabilities": {
+    "energy_peak_reason": {
+      "type": "string",
+      "title": {
+        "en": "Last peak reason",
+        "nl": "Oorzaak laatste piek"
+      },
+      "desc": {
+        "en": "Human readable explanation of the most recent power peak.",
+        "nl": "Leesbare uitleg van de meest recente vermogenspiek."
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "insights": false,
+      "icon": "/assets/capabilities/energy_peak_reason.svg"
+    },
+    "energy_self_sufficiency": {
+      "type": "number",
+      "title": {
+        "en": "Self-sufficiency",
+        "nl": "Zelfvoorziening"
+      },
+      "desc": {
+        "en": "Share of the current power usage that is covered by solar production.",
+        "nl": "Deel van het huidige verbruik dat door zonneproductie wordt gedekt."
+      },
+      "units": {
+        "en": "%",
+        "nl": "%"
+      },
+      "min": 0,
+      "max": 100,
+      "decimals": 0,
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "insights": true,
+      "insightsTitle": {
+        "en": "Self-sufficiency",
+        "nl": "Zelfvoorziening"
+      },
+      "icon": "/assets/capabilities/energy_self_sufficiency.svg"
+    }
+  }
+}

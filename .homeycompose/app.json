@@ -1,0 +1,109 @@
+{
+  "id": "com.homey.energyinsights",
+  "version": "1.0.0",
+  "compatibility": ">=12.2.0",
+  "sdk": 3,
+  "platforms": [
+    "local"
+  ],
+  "name": {
+    "en": "Homey Energy Insights",
+    "nl": "Homey Energy Insights"
+  },
+  "description": {
+    "en": "A real-time energy dashboard that plots live power usage, solar production and net power on one annotated timeline, and explains why every peak happened.",
+    "nl": "Een realtime energiedashboard dat live verbruik, zonneopbrengst en netvermogen op één geannoteerde tijdlijn tekent en uitlegt waaróm elke piek ontstond."
+  },
+  "category": [
+    "energy"
+  ],
+  "brandColor": "#F5A623",
+  "tags": {
+    "en": [
+      "energy",
+      "power",
+      "solar",
+      "insights",
+      "dashboard",
+      "timeline",
+      "peak"
+    ],
+    "nl": [
+      "energie",
+      "vermogen",
+      "zonnepanelen",
+      "inzicht",
+      "dashboard",
+      "tijdlijn",
+      "piek"
+    ]
+  },
+  "permissions": [
+    "homey:manager:api"
+  ],
+  "images": {
+    "small": "/assets/images/small.png",
+    "large": "/assets/images/large.png",
+    "xlarge": "/assets/images/xlarge.png"
+  },
+  "author": {
+    "name": "Rocco Wijnsma"
+  },
+  "contributors": {
+    "developers": [
+      {
+        "name": "Rocco Wijnsma"
+      }
+    ]
+  },
+  "source": "https://github.com/RoccoWijnsma/homey-panel-koppeling-",
+  "bugs": {
+    "url": "https://github.com/RoccoWijnsma/homey-panel-koppeling-/issues"
+  },
+  "api": {
+    "getState": {
+      "method": "GET",
+      "path": "/state"
+    },
+    "getTimeline": {
+      "method": "GET",
+      "path": "/timeline"
+    },
+    "getMarkers": {
+      "method": "GET",
+      "path": "/markers"
+    },
+    "addMarker": {
+      "method": "POST",
+      "path": "/markers"
+    },
+    "deleteMarker": {
+      "method": "DELETE",
+      "path": "/markers/:id"
+    },
+    "clearMarkers": {
+      "method": "DELETE",
+      "path": "/markers"
+    },
+    "getDevices": {
+      "method": "GET",
+      "path": "/devices"
+    },
+    "setDeviceRole": {
+      "method": "PUT",
+      "path": "/devices/:id/role"
+    },
+    "getConfig": {
+      "method": "GET",
+      "path": "/config"
+    },
+    "setConfig": {
+      "method": "PUT",
+      "path": "/config"
+    },
+    "getDiagnostics": {
+      "method": "GET",
+      "path": "/diagnostics"
+    }
+  }
+}

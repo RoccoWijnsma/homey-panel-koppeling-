@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Energy Timeline</title>
+  <script type="text/javascript" src="/homey.js" data-origin="widget"></script>
+  <style>
+    /*
+     * The widget carries its own copy of the palette: a dashboard tile is rendered in its own
+     * frame and cannot reach the settings stylesheet. Same validated values, fewer tokens.
+     */
+    :root {
+      color-scheme: light dark;
+      --ei-text: #0b0b0b;
+      --ei-muted: #52514e;
+      --ei-surface: #ffffff;
+      --ei-grid: rgba(82, 81, 78, 0.14);
+      --ei-axis: rgba(82, 81, 78, 0.34);
+      --ei-tooltip: rgba(11, 11, 11, 0.93);
+      --ei-tooltip-text: #ffffff;
+      --ei-usage: #2a78d6;
+      --ei-usage-fill: rgba(42, 120, 214, 0.12);
+      --ei-solar: #eda100;
+      --ei-solar-fill: rgba(237, 161, 0, 0.16);
+      --ei-net: #1baf7a;
+      --ei-status: #e34948;
+      --ei-peak: rgba(227, 73, 72, 0.26);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --ei-text: #ffffff;
+        --ei-muted: #c3c2b7;
+        --ei-surface: #1a1a19;
+        --ei-grid: rgba(195, 194, 183, 0.14);
+        --ei-axis: rgba(195, 194, 183, 0.32);
+        --ei-usage: #3987e5;
+        --ei-usage-fill: rgba(57, 135, 229, 0.16);
+        --ei-solar: #c98500;
+        --ei-solar-fill: rgba(201, 133, 0, 0.18);
+        --ei-net: #199e70;
+        --ei-status: #d93a39;
+        --ei-peak: rgba(217, 58, 57, 0.30);
+      }
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: transparent;
+      color: var(--ei-text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .tile {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      padding: 8px 10px 4px;
+      gap: 4px;
+    }
+
+    .row {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .metric {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      color: var(--ei-muted);
+      white-space: nowrap;
+    }
+
+    .metric b {
+      color: var(--ei-text);
+      font-size: 13px;
+      font-weight: 640;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 2px;
+      flex: none;
+    }
+
+    .dot.usage { background: var(--ei-usage); }
+    .dot.solar { background: var(--ei-solar); }
+    .dot.net { background: var(--ei-net); }
+
+    .chart {
+      flex: 1;
+      min-height: 0;
+      position: relative;
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .peak {
+      font-size: 10px;
+      color: var(--ei-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      min-height: 13px;
+    }
+
+    .peak i {
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      margin-right: 4px;
+      background: var(--ei-status);
+      transform: rotate(45deg);
+      vertical-align: 1px;
+    }
+
+    .peak b {
+      color: var(--ei-text);
+      font-weight: 620;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="tile">
+    <div class="row">
+      <span class="metric"><i class="dot usage"></i>Usage <b id="usage">–</b></span>
+      <span class="metric"><i class="dot solar"></i>Solar <b id="solar">–</b></span>
+      <span class="metric"><i class="dot net"></i>Net <b id="net">–</b></span>
+    </div>
+    <div class="chart"><canvas id="chart"></canvas></div>
+    <div class="peak" id="peak"></div>
+  </div>
+
+  <script src="./timeline-chart.js"></script>
+  <script>
+    /* global Homey, TimelineChart */
+    (function widget() {
+      'use strict';
+
+      const REFRESH_MS = 30000;
+      let chart = null;
+      let settings = { range: 3600000, showMarkers: true, showNet: true };
+
+      function api(method, path) {
+        return new Promise((resolve, reject) => {
+          Homey.api(method, path, null, (error, result) => {
+            if (error) reject(error instanceof Error ? error : new Error(error.message || String(error)));
+            else resolve(result);
+          });
+        });
+      }
+
+      function readSettings() {
+        const stored = (typeof Homey.getSettings === 'function' && Homey.getSettings()) || {};
+        settings = {
+          range: Number(stored.range) || 3600000,
+          showMarkers: stored.showMarkers !== false,
+          showNet: stored.showNet !== false,
+        };
+      }
+
+      function renderState(state) {
+        if (!state) return;
+        document.getElementById('usage').textContent = TimelineChart.formatWatts(state.consumption);
+        document.getElementById('solar').textContent = TimelineChart.formatWatts(state.solar);
+        document.getElementById('net').textContent = TimelineChart.formatWatts(state.net);
+
+        const peak = document.getElementById('peak');
+        if (state.peak && state.peak.reason) {
+          peak.innerHTML = '';
+          const glyph = document.createElement('i');
+          const label = document.createElement('b');
+          label.textContent = `${TimelineChart.formatClock(state.peak.t, false)} `;
+          peak.append(glyph, label, document.createTextNode(state.peak.reason));
+        } else {
+          peak.textContent = '';
+        }
+      }
+
+      async function refresh() {
+        try {
+          const to = Date.now();
+          const from = to - settings.range;
+          const points = Math.max(90, Math.round(window.innerWidth));
+          const result = await api('GET', `/timeline?from=${from}&to=${to}&points=${points}`);
+
+          chart.setData({ series: result.series, markers: settings.showMarkers ? result.markers : [] });
+          chart.setRange(from, to, true);
+          renderState(result.state);
+        } catch (error) {
+          // A dashboard tile stays quiet on failure; the next refresh usually fixes it.
+        }
+      }
+
+      window.onHomeyReady = function onHomeyReady(ready) {
+        window.Homey = ready;
+        readSettings();
+
+        chart = new TimelineChart(document.getElementById('chart'), {
+          compact: true,
+          interactive: false,
+        });
+        chart.setVisible({ net: settings.showNet });
+        chart.setEmptyText('Collecting data…');
+
+        if (typeof ready.on === 'function') {
+          ready.on('state', (state) => {
+            renderState(state);
+            chart.appendSample({
+              t: state.t,
+              consumption: state.consumption,
+              solar: state.solar,
+              net: state.net,
+            });
+          });
+          ready.on('marker', (marker) => {
+            if (settings.showMarkers) chart.addMarker(marker);
+          });
+        }
+
+        refresh();
+        setInterval(refresh, REFRESH_MS);
+        ready.ready();
+      };
+    }());
+  </script>
+</body>
+
+</html>

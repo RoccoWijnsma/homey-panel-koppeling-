@@ -1,0 +1,10 @@
+{
+  "title": {
+    "en": "Homey !{{is|is not}} feeding power back to the grid",
+    "nl": "Homey !{{levert|levert geen}} stroom terug aan het net"
+  },
+  "hint": {
+    "en": "True while net power is negative, meaning surplus solar power is exported to the grid.",
+    "nl": "Waar zolang het netto vermogen negatief is, dus wanneer overtollige zonnestroom wordt teruggeleverd."
+  }
+}

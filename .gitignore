@@ -1,0 +1,7 @@
+node_modules/
+.homeybuild/
+npm-debug.log*
+.DS_Store
+env.json
+*.tgz
+tools/preview/out/

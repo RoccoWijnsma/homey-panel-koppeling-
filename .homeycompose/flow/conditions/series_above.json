@@ -1,0 +1,44 @@
+{
+  "title": {
+    "en": "A timeline series !{{is|is not}} above a value",
+    "nl": "Een tijdlijnreeks !{{is|is niet}} boven een waarde"
+  },
+  "titleFormatted": {
+    "en": "[[series]] !{{is|is not}} above [[watts]] W",
+    "nl": "[[series]] !{{is|is niet}} boven [[watts]] W"
+  },
+  "hint": {
+    "en": "Compare the live value of one of the three timeline series against a value in Watt.",
+    "nl": "Vergelijk de live waarde van een van de drie tijdlijnreeksen met een waarde in Watt."
+  },
+  "args": [
+    {
+      "type": "dropdown",
+      "name": "series",
+      "title": { "en": "Series", "nl": "Reeks" },
+      "values": [
+        {
+          "id": "consumption",
+          "title": { "en": "Power usage", "nl": "Verbruik" }
+        },
+        {
+          "id": "solar",
+          "title": { "en": "Solar production", "nl": "Zonneproductie" }
+        },
+        {
+          "id": "net",
+          "title": { "en": "Net grid power", "nl": "Netto netvermogen" }
+        }
+      ]
+    },
+    {
+      "type": "number",
+      "name": "watts",
+      "title": { "en": "Value (W)", "nl": "Waarde (W)" },
+      "min": -100000,
+      "max": 100000,
+      "step": 10,
+      "placeholder": { "en": "1000", "nl": "1000" }
+    }
+  ]
+}
