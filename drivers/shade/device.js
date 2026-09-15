@@ -16,6 +16,7 @@ const {
   toPercent,
 } = require('../../lib/position');
 const { PowerViewShade } = require('../../lib/shade');
+const { answerWithin } = require('../../lib/answer-within');
 
 /**
  * Never mark a shade unavailable sooner than this, however short the scan
@@ -32,6 +33,23 @@ const MISSED_SCANS_ALLOWED = 5;
  * so the command is sent rather than skipped.
  */
 const FRESH_READING_MS = 5 * 60 * 1000;
+
+/**
+ * How long a command waits for the radio before the capability answers anyway.
+ *
+ * A bridge to Apple Home turns "Hey Siri, open the blinds" into one
+ * characteristic write, and HomeKit stops waiting on that write well before a
+ * Bluetooth round trip can finish - so a shade that moves perfectly well is
+ * still reported back as unresponsive, and the same is true of any voice
+ * assistant reached through a bridge.
+ *
+ * Capping the wait hides nothing. The checks that fail instantly - no home
+ * key, no reading to build the command from - still reject, so a real problem
+ * is still a visible error. Only a slow radio is left to finish on its own,
+ * and the shade's own advertisement is where the position comes from either
+ * way.
+ */
+const COMMAND_ACK_MS = 2500;
 
 class ShadeDevice extends Homey.Device {
   async onInit() {
@@ -177,7 +195,7 @@ class ShadeDevice extends Homey.Device {
    */
   async _setState(value) {
     if (value === 'idle') {
-      await this._withAdapter(() => this._shade.stop());
+      await this._answerWithin(this._withAdapter(() => this._shade.stop()), 'stop');
       return;
     }
     const target = value === 'up' ? 1 : 0;
@@ -242,7 +260,28 @@ class ShadeDevice extends Homey.Device {
     }
 
     this.log(`${description}`);
-    await this._withAdapter(() => this._shade.setPosition({ ...move, velocity: this._velocity() }));
+    await this._answerWithin(
+      this._withAdapter(() => this._shade.setPosition({ ...move, velocity: this._velocity() })),
+      description,
+    );
+  }
+
+  /**
+   * Answer a capability write once the radio has had `COMMAND_ACK_MS`, whether
+   * or not it has finished.
+   *
+   * @param {Promise<unknown>} command
+   * @param {string} description
+   * @returns {Promise<void>}
+   */
+  _answerWithin(command, description) {
+    return answerWithin(command, {
+      ms: COMMAND_ACK_MS,
+      setTimeout: (fn, ms) => this.homey.setTimeout(fn, ms),
+      clearTimeout: (timer) => this.homey.clearTimeout(timer),
+      onFailure: (err) => this.error(`${description} failed`, err),
+      onSlow: () => this.log(`${description}: radio still busy, answering now`),
+    });
   }
 
   /**
