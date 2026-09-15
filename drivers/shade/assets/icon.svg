@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Pleated shade">
+  <g fill="none" stroke="#000" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Head rail -->
+    <path d="M12 8h40" />
+    <!-- Pleats, stacked down to the bottom rail -->
+    <path d="M14 16h36M14 24h36M14 32h36M14 40h36" />
+    <!-- Bottom rail and pull cord -->
+    <path d="M12 48h40" />
+    <path d="M32 48v8" />
+  </g>
+</svg>
