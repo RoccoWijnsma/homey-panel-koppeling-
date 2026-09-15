@@ -1,0 +1,30 @@
+{
+  "title": {
+    "en": "Net feed-in to the grid started",
+    "nl": "Teruglevering aan het net is gestart"
+  },
+  "hint": {
+    "en": "Triggers the moment solar production starts to exceed household consumption, so power flows back to the grid.",
+    "nl": "Wordt geactiveerd zodra de zonneproductie het verbruik overstijgt en er stroom terug het net op gaat."
+  },
+  "tokens": [
+    {
+      "name": "watts",
+      "type": "number",
+      "title": { "en": "Feed-in power (W)", "nl": "Terugleververmogen (W)" },
+      "example": 1240
+    },
+    {
+      "name": "solar",
+      "type": "number",
+      "title": { "en": "Solar production (W)", "nl": "Zonneproductie (W)" },
+      "example": 3100
+    },
+    {
+      "name": "consumption",
+      "type": "number",
+      "title": { "en": "Consumption (W)", "nl": "Verbruik (W)" },
+      "example": 1860
+    }
+  ]
+}

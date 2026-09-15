@@ -1,0 +1,89 @@
+{
+  "app": {
+    "name": "Homey Energy Insights"
+  },
+  "settings": {
+    "title": "Energy Timeline",
+    "subtitle": "Live power, solar and net grid power with annotated events",
+    "tabs": {
+      "timeline": "Timeline",
+      "devices": "Devices",
+      "settings": "Settings"
+    },
+    "stats": {
+      "usage": "Power usage",
+      "solar": "Solar",
+      "net": "Net grid",
+      "peakToday": "Peak today",
+      "selfSufficiency": "Self-sufficiency",
+      "feedIn": "Feed-in now"
+    },
+    "range": {
+      "live": "15 min",
+      "hour": "1 hour",
+      "sixHours": "6 hours",
+      "day": "24 hours"
+    },
+    "actions": {
+      "follow": "Live",
+      "addMarker": "Add marker",
+      "clearMarkers": "Clear markers",
+      "save": "Save",
+      "reset": "Reset zoom"
+    },
+    "legend": {
+      "usage": "Usage",
+      "solar": "Solar",
+      "net": "Net",
+      "markers": "Events"
+    },
+    "devices": {
+      "role": "Role",
+      "auto": "Automatic",
+      "consumer": "Consumer",
+      "solar": "Solar production",
+      "grid": "Grid meter",
+      "battery": "Battery",
+      "ignore": "Ignore",
+      "power": "Power",
+      "empty": "No devices with a power meter were found yet."
+    },
+    "config": {
+      "peakThreshold": "Peak threshold (W)",
+      "peakDelta": "Minimum rise for a peak (W)",
+      "sampleInterval": "Sample interval (seconds)",
+      "markerRetention": "Keep markers for (hours)",
+      "trackDeviceSwitches": "Add markers for device on/off",
+      "trackSolarEvents": "Add markers for solar events",
+      "minMarkerPower": "Ignore devices below (W)"
+    },
+    "hint": "Drag to scrub through history, scroll or pinch to zoom, tap a marker to read why it is there.",
+    "empty": "Collecting data… the timeline fills up as soon as your devices report power.",
+    "error": "Could not load data from the app."
+  },
+  "marker": {
+    "deviceOn": "{device} turned on",
+    "deviceOff": "{device} turned off",
+    "peak": "Power peak {watts}",
+    "solarPeak": "Peak solar yield {watts}",
+    "feedInStart": "Net feed-in started",
+    "feedInEnd": "Net feed-in stopped",
+    "solarStart": "Solar production started",
+    "solarEnd": "Solar production stopped",
+    "custom": "{label}"
+  },
+  "reason": {
+    "peakCausedBy": "Peak caused by {cause}",
+    "deviceStarting": "{device} starting",
+    "deviceRising": "{device} ramping up",
+    "and": " and ",
+    "whileSolarDropped": " while solar yield dropped by {delta}",
+    "whileSolarRose": " while solar yield rose by {delta}",
+    "withoutSolar": " with no solar production to cover it",
+    "unknown": "Peak of {watts} from devices that do not report power individually",
+    "unattributed": "Unmetered load"
+  },
+  "device": {
+    "name": "Energy Insights"
+  }
+}

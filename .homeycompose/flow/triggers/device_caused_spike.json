@@ -1,0 +1,57 @@
+{
+  "title": {
+    "en": "A device caused a power spike",
+    "nl": "Een apparaat veroorzaakte een vermogenspiek"
+  },
+  "titleFormatted": {
+    "en": "Device [[device]] caused a power spike",
+    "nl": "Apparaat [[device]] veroorzaakte een vermogenspiek"
+  },
+  "hint": {
+    "en": "Triggers when the app attributes a power spike to a specific device. Pick 'Any device' to trigger for every attributed spike.",
+    "nl": "Wordt geactiveerd wanneer de app een vermogenspiek aan een specifiek apparaat toeschrijft. Kies 'Elk apparaat' om bij elke toegeschreven piek te triggeren."
+  },
+  "args": [
+    {
+      "type": "autocomplete",
+      "name": "device",
+      "title": { "en": "Device", "nl": "Apparaat" },
+      "placeholder": { "en": "Which device?", "nl": "Welk apparaat?" }
+    }
+  ],
+  "tokens": [
+    {
+      "name": "device",
+      "type": "string",
+      "title": { "en": "Device", "nl": "Apparaat" },
+      "example": { "en": "EV Charger", "nl": "Laadpaal" }
+    },
+    {
+      "name": "delta",
+      "type": "number",
+      "title": { "en": "Power increase (W)", "nl": "Vermogenstoename (W)" },
+      "example": 2300
+    },
+    {
+      "name": "watts",
+      "type": "number",
+      "title": { "en": "Total power (W)", "nl": "Totaal vermogen (W)" },
+      "example": 4210
+    },
+    {
+      "name": "share",
+      "type": "number",
+      "title": { "en": "Share of the spike (%)", "nl": "Aandeel in de piek (%)" },
+      "example": 78
+    },
+    {
+      "name": "reason",
+      "type": "string",
+      "title": { "en": "Why", "nl": "Waarom" },
+      "example": {
+        "en": "Peak caused by EV Charger starting",
+        "nl": "Piek veroorzaakt doordat Laadpaal startte"
+      }
+    }
+  ]
+}

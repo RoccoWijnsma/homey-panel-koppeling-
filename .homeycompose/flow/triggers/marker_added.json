@@ -1,0 +1,30 @@
+{
+  "title": {
+    "en": "A marker was added to the Energy Timeline",
+    "nl": "Er is een markering aan de energie-tijdlijn toegevoegd"
+  },
+  "hint": {
+    "en": "Triggers for every marker placed on the timeline: device switches, solar events, detected peaks and custom markers.",
+    "nl": "Wordt geactiveerd bij elke markering op de tijdlijn: apparaatschakelingen, zonne-events, gedetecteerde pieken en eigen markeringen."
+  },
+  "tokens": [
+    {
+      "name": "label",
+      "type": "string",
+      "title": { "en": "Label", "nl": "Label" },
+      "example": { "en": "Washing Machine turned on", "nl": "Wasmachine ingeschakeld" }
+    },
+    {
+      "name": "type",
+      "type": "string",
+      "title": { "en": "Marker type", "nl": "Type markering" },
+      "example": { "en": "device_on", "nl": "device_on" }
+    },
+    {
+      "name": "watts",
+      "type": "number",
+      "title": { "en": "Power at marker (W)", "nl": "Vermogen bij markering (W)" },
+      "example": 2100
+    }
+  ]
+}

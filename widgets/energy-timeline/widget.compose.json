@@ -1,0 +1,48 @@
+{
+  "name": {
+    "en": "Energy Timeline",
+    "nl": "Energie-tijdlijn"
+  },
+  "height": 240,
+  "settings": [
+    {
+      "id": "range",
+      "type": "dropdown",
+      "title": {
+        "en": "Time range",
+        "nl": "Tijdsbereik"
+      },
+      "value": "3600000",
+      "values": [
+        { "id": "900000", "title": { "en": "15 minutes", "nl": "15 minuten" } },
+        { "id": "3600000", "title": { "en": "1 hour", "nl": "1 uur" } },
+        { "id": "21600000", "title": { "en": "6 hours", "nl": "6 uur" } },
+        { "id": "86400000", "title": { "en": "24 hours", "nl": "24 uur" } }
+      ]
+    },
+    {
+      "id": "showMarkers",
+      "type": "checkbox",
+      "title": {
+        "en": "Show event markers",
+        "nl": "Toon markeringen"
+      },
+      "value": true
+    },
+    {
+      "id": "showNet",
+      "type": "checkbox",
+      "title": {
+        "en": "Show net grid power",
+        "nl": "Toon netto netvermogen"
+      },
+      "value": true
+    }
+  ],
+  "api": {
+    "getTimeline": {
+      "method": "GET",
+      "path": "/timeline"
+    }
+  }
+}

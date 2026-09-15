@@ -1,0 +1,26 @@
+{
+  "title": {
+    "en": "Power usage !{{is|is not}} higher than solar production",
+    "nl": "Het verbruik !{{is|is niet}} hoger dan de zonneproductie"
+  },
+  "hint": {
+    "en": "True while the household consumes more power than the solar panels are producing, i.e. while power is being imported from the grid.",
+    "nl": "Waar zolang het huis meer verbruikt dan de zonnepanelen opwekken, dus zolang er stroom van het net wordt afgenomen."
+  },
+  "args": [
+    {
+      "type": "number",
+      "name": "margin",
+      "title": { "en": "Margin (W)", "nl": "Marge (W)" },
+      "min": 0,
+      "max": 100000,
+      "step": 10,
+      "value": 0,
+      "placeholder": { "en": "0", "nl": "0" }
+    }
+  ],
+  "titleFormatted": {
+    "en": "Power usage !{{is|is not}} higher than solar production by at least [[margin]] W",
+    "nl": "Het verbruik !{{is|is niet}} minimaal [[margin]] W hoger dan de zonneproductie"
+  }
+}

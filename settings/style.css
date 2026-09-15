@@ -1,0 +1,680 @@
+/**
+ * Homey Energy Insights - dashboard styling.
+ *
+ * The chart reads its colours from the --ei-* custom properties below, so light and dark mode are
+ * defined in exactly one place and the canvas follows the page without any JavaScript theme logic.
+ *
+ * Palette note: the three series hues (blue / amber / teal) plus the reserved status red were
+ * validated for colour-vision separation against both surfaces. Dark mode is a selected set of
+ * steps for the dark surface, not an automatic inversion of the light one.
+ */
+
+:root {
+  color-scheme: light;
+
+  --ei-bg: #f3f3f1;
+  --ei-surface: #ffffff;
+  --ei-surface-2: #f7f7f5;
+  --ei-border: rgba(11, 11, 11, 0.09);
+  --ei-text: #0b0b0b;
+  --ei-muted: #52514e;
+  --ei-grid: rgba(82, 81, 78, 0.14);
+  --ei-axis: rgba(82, 81, 78, 0.38);
+  --ei-tooltip: rgba(11, 11, 11, 0.93);
+  --ei-tooltip-text: #ffffff;
+
+  /* Series */
+  --ei-usage: #2a78d6;
+  --ei-usage-fill: rgba(42, 120, 214, 0.11);
+  --ei-solar: #eda100;
+  --ei-solar-fill: rgba(237, 161, 0, 0.15);
+  --ei-net: #1baf7a;
+
+  /* Reserved status colour: power peaks only. */
+  --ei-status: #e34948;
+  --ei-peak: rgba(227, 73, 72, 0.28);
+
+  --ei-shadow: 0 1px 2px rgba(11, 11, 11, 0.06), 0 8px 24px rgba(11, 11, 11, 0.06);
+  --ei-radius: 14px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+
+    --ei-bg: #111110;
+    --ei-surface: #1a1a19;
+    --ei-surface-2: #222220;
+    --ei-border: rgba(255, 255, 255, 0.10);
+    --ei-text: #ffffff;
+    --ei-muted: #c3c2b7;
+    --ei-grid: rgba(195, 194, 183, 0.14);
+    --ei-axis: rgba(195, 194, 183, 0.34);
+    --ei-tooltip: rgba(0, 0, 0, 0.92);
+    --ei-tooltip-text: #ffffff;
+
+    --ei-usage: #3987e5;
+    --ei-usage-fill: rgba(57, 135, 229, 0.15);
+    --ei-solar: #c98500;
+    --ei-solar-fill: rgba(201, 133, 0, 0.17);
+    --ei-net: #199e70;
+
+    --ei-status: #d93a39;
+    --ei-peak: rgba(217, 58, 57, 0.32);
+
+    --ei-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --ei-bg: #111110;
+  --ei-surface: #1a1a19;
+  --ei-surface-2: #222220;
+  --ei-border: rgba(255, 255, 255, 0.10);
+  --ei-text: #ffffff;
+  --ei-muted: #c3c2b7;
+  --ei-grid: rgba(195, 194, 183, 0.14);
+  --ei-axis: rgba(195, 194, 183, 0.34);
+  --ei-tooltip: rgba(0, 0, 0, 0.92);
+  --ei-tooltip-text: #ffffff;
+
+  --ei-usage: #3987e5;
+  --ei-usage-fill: rgba(57, 135, 229, 0.15);
+  --ei-solar: #c98500;
+  --ei-solar-fill: rgba(201, 133, 0, 0.17);
+  --ei-net: #199e70;
+
+  --ei-status: #d93a39;
+  --ei-peak: rgba(217, 58, 57, 0.32);
+
+  --ei-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0 0 env(safe-area-inset-bottom);
+  background: var(--ei-bg);
+  color: var(--ei-text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.ei {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 12px 12px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ----------------------------------------------------------------- header */
+
+.ei-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.ei-title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+.ei-subtitle {
+  margin: 1px 0 0;
+  font-size: 12px;
+  color: var(--ei-muted);
+}
+
+.ei-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ei-net);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ei-net) 22%, transparent);
+  flex: none;
+}
+
+.ei-status-dot[data-state="stale"] {
+  background: var(--ei-muted);
+  box-shadow: none;
+}
+
+.ei-status-dot[data-state="peak"] {
+  background: var(--ei-status);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ei-status) 22%, transparent);
+}
+
+/* ----------------------------------------------------------------- tabs */
+
+.ei-tabs {
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  background: var(--ei-surface-2);
+  border: 1px solid var(--ei-border);
+  border-radius: 11px;
+}
+
+.ei-tab {
+  flex: 1;
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--ei-muted);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 550;
+  padding: 7px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.ei-tab[aria-selected="true"] {
+  background: var(--ei-surface);
+  color: var(--ei-text);
+  box-shadow: var(--ei-shadow);
+}
+
+.ei-panel[hidden] {
+  display: none;
+}
+
+.ei-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ----------------------------------------------------------------- cards */
+
+.ei-card {
+  background: var(--ei-surface);
+  border: 1px solid var(--ei-border);
+  border-radius: var(--ei-radius);
+  box-shadow: var(--ei-shadow);
+  padding: 12px;
+}
+
+.ei-card-title {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ei-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* ----------------------------------------------------------------- stats */
+
+.ei-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+@media (min-width: 560px) {
+  .ei-stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.ei-stat {
+  background: var(--ei-surface);
+  border: 1px solid var(--ei-border);
+  border-radius: 12px;
+  padding: 9px 11px;
+  box-shadow: var(--ei-shadow);
+  min-width: 0;
+}
+
+.ei-stat-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 550;
+  color: var(--ei-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ei-stat-value {
+  font-size: 20px;
+  font-weight: 640;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ei-stat-sub {
+  font-size: 11px;
+  color: var(--ei-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.ei-swatch {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  flex: none;
+}
+
+.ei-swatch[data-series="usage"] { background: var(--ei-usage); }
+.ei-swatch[data-series="solar"] { background: var(--ei-solar); }
+.ei-swatch[data-series="net"] { background: var(--ei-net); }
+.ei-swatch[data-series="peak"] {
+  background: var(--ei-status);
+  transform: rotate(45deg);
+  border-radius: 1px;
+}
+
+/* ----------------------------------------------------------------- chart */
+
+.ei-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.ei-chips {
+  display: flex;
+  gap: 4px;
+  padding: 3px;
+  background: var(--ei-surface-2);
+  border-radius: 9px;
+  border: 1px solid var(--ei-border);
+}
+
+.ei-chip {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--ei-muted);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 550;
+  padding: 5px 9px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-variant-numeric: tabular-nums;
+}
+
+.ei-chip[aria-pressed="true"] {
+  background: var(--ei-surface);
+  color: var(--ei-text);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+}
+
+.ei-spacer {
+  flex: 1;
+}
+
+.ei-button {
+  appearance: none;
+  border: 1px solid var(--ei-border);
+  background: var(--ei-surface-2);
+  color: var(--ei-text);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 550;
+  padding: 6px 11px;
+  border-radius: 9px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.ei-button:active {
+  transform: translateY(1px);
+}
+
+/*
+ * The live toggle is chrome, not data, so it does not borrow the reserved status red - a red
+ * control next to a red peak marker would read as an alarm. It gets the neutral pressed
+ * treatment plus the same teal dot the header uses for "receiving data".
+ */
+.ei-button[data-variant="live"] {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ei-button[data-variant="live"]::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ei-muted);
+  opacity: 0.4;
+}
+
+.ei-button[data-variant="live"][aria-pressed="true"] {
+  background: var(--ei-surface);
+  border-color: color-mix(in srgb, var(--ei-net) 45%, var(--ei-border));
+  color: var(--ei-text);
+  font-weight: 600;
+}
+
+.ei-button[data-variant="live"][aria-pressed="true"]::before {
+  background: var(--ei-net);
+  opacity: 1;
+}
+
+.ei-button[data-variant="primary"] {
+  background: var(--ei-usage);
+  border-color: var(--ei-usage);
+  color: #ffffff;
+}
+
+.ei-canvas-wrap {
+  position: relative;
+  width: 100%;
+  height: 260px;
+  touch-action: pan-y;
+}
+
+@media (min-width: 560px) {
+  .ei-canvas-wrap {
+    height: 330px;
+  }
+}
+
+.ei-canvas-wrap canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  cursor: crosshair;
+}
+
+/* The legend doubles as the direct-label layer: every series shows its live value. */
+.ei-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.ei-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 9px;
+  border: 1px solid var(--ei-border);
+  border-radius: 999px;
+  background: var(--ei-surface-2);
+  font-size: 12px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.ei-legend-item[aria-pressed="false"] {
+  opacity: 0.45;
+}
+
+.ei-legend-value {
+  font-weight: 620;
+  font-variant-numeric: tabular-nums;
+}
+
+.ei-legend-line {
+  width: 14px;
+  height: 3px;
+  border-radius: 2px;
+  flex: none;
+}
+
+.ei-legend-line[data-series="usage"] { background: var(--ei-usage); }
+.ei-legend-line[data-series="solar"] { background: var(--ei-solar); }
+.ei-legend-line[data-series="net"] {
+  background: repeating-linear-gradient(to right, var(--ei-net) 0 5px, transparent 5px 8px);
+}
+
+.ei-hint {
+  margin: 8px 0 0;
+  font-size: 11px;
+  color: var(--ei-muted);
+}
+
+/* ----------------------------------------------------------------- events */
+
+.ei-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.ei-event {
+  display: flex;
+  gap: 9px;
+  padding: 8px 0;
+  border-top: 1px solid var(--ei-border);
+  align-items: flex-start;
+}
+
+.ei-event:first-child {
+  border-top: 0;
+}
+
+.ei-event-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  margin-top: 5px;
+  flex: none;
+}
+
+.ei-event-dot[data-color="blue"] { background: var(--ei-usage); }
+.ei-event-dot[data-color="amber"] { background: var(--ei-solar); }
+.ei-event-dot[data-color="teal"] { background: var(--ei-net); }
+.ei-event-dot[data-color="grey"] { background: var(--ei-muted); }
+.ei-event-dot[data-color="red"] {
+  background: var(--ei-status);
+  border-radius: 1px;
+  transform: rotate(45deg);
+}
+
+/* An "ended" event is an outline, matching how the chart draws it. */
+.ei-event-dot[data-ending="true"] {
+  background: transparent;
+  box-shadow: inset 0 0 0 2px currentColor;
+}
+
+.ei-event-dot[data-ending="true"][data-color="blue"] { color: var(--ei-usage); }
+.ei-event-dot[data-ending="true"][data-color="amber"] { color: var(--ei-solar); }
+.ei-event-dot[data-ending="true"][data-color="teal"] { color: var(--ei-net); }
+
+.ei-event-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.ei-event-label {
+  font-size: 13px;
+  font-weight: 560;
+}
+
+.ei-event-reason {
+  font-size: 12px;
+  color: var(--ei-muted);
+}
+
+.ei-event-meta {
+  font-size: 11px;
+  color: var(--ei-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  text-align: right;
+  flex: none;
+}
+
+/* ----------------------------------------------------------------- devices */
+
+.ei-device {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 0;
+  border-top: 1px solid var(--ei-border);
+}
+
+.ei-device:first-child {
+  border-top: 0;
+}
+
+.ei-device-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.ei-device-name {
+  font-size: 14px;
+  font-weight: 550;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ei-device-meta {
+  font-size: 11px;
+  color: var(--ei-muted);
+}
+
+.ei-device-power {
+  font-size: 14px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.ei-onoff {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  margin-right: 5px;
+  background: var(--ei-muted);
+  opacity: 0.35;
+}
+
+.ei-onoff[data-on="true"] {
+  background: var(--ei-net);
+  opacity: 1;
+}
+
+/* ----------------------------------------------------------------- forms */
+
+select,
+input[type="text"],
+input[type="number"] {
+  appearance: none;
+  font: inherit;
+  font-size: 13px;
+  color: var(--ei-text);
+  background: var(--ei-surface-2);
+  border: 1px solid var(--ei-border);
+  border-radius: 9px;
+  padding: 7px 9px;
+  max-width: 100%;
+}
+
+select {
+  padding-right: 26px;
+  background-image: linear-gradient(45deg, transparent 50%, currentColor 50%),
+    linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position: calc(100% - 14px) 50%, calc(100% - 9px) 50%;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+}
+
+.ei-field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 0;
+  border-top: 1px solid var(--ei-border);
+}
+
+.ei-field:first-of-type {
+  border-top: 0;
+}
+
+.ei-field label {
+  font-size: 13px;
+  flex: 1;
+}
+
+.ei-field input[type="number"] {
+  width: 96px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.ei-field input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--ei-usage);
+}
+
+.ei-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.ei-empty {
+  padding: 18px 4px;
+  text-align: center;
+  color: var(--ei-muted);
+  font-size: 13px;
+}
+
+.ei-toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(16px + env(safe-area-inset-bottom));
+  transform: translateX(-50%) translateY(8px);
+  background: var(--ei-tooltip);
+  color: var(--ei-tooltip-text);
+  font-size: 13px;
+  padding: 9px 14px;
+  border-radius: 10px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+  max-width: calc(100vw - 32px);
+  z-index: 20;
+}
+
+.ei-toast[data-visible="true"] {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ei-toast {
+    transition: none;
+  }
+}

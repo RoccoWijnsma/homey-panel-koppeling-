@@ -1,0 +1,72 @@
+{
+  "title": {
+    "en": "A power peak occurred",
+    "nl": "Er is een vermogenspiek opgetreden"
+  },
+  "titleFormatted": {
+    "en": "A power peak occurred above [[watts]] W",
+    "nl": "Er is een vermogenspiek boven [[watts]] W opgetreden"
+  },
+  "hint": {
+    "en": "Triggers when total household power rises sharply above the given threshold. The 'why' token explains which devices and which solar change caused the peak.",
+    "nl": "Wordt geactiveerd wanneer het totale vermogen scherp boven de ingestelde grens stijgt. De 'waarom'-tag legt uit welke apparaten en welke zonneverandering de piek veroorzaakten."
+  },
+  "args": [
+    {
+      "type": "number",
+      "name": "watts",
+      "title": {
+        "en": "Threshold (W)",
+        "nl": "Drempel (W)"
+      },
+      "min": 0,
+      "max": 100000,
+      "step": 10,
+      "placeholder": {
+        "en": "3000",
+        "nl": "3000"
+      }
+    }
+  ],
+  "tokens": [
+    {
+      "name": "watts",
+      "type": "number",
+      "title": { "en": "Peak power (W)", "nl": "Piekvermogen (W)" },
+      "example": 4210
+    },
+    {
+      "name": "delta",
+      "type": "number",
+      "title": { "en": "Rise (W)", "nl": "Stijging (W)" },
+      "example": 2100
+    },
+    {
+      "name": "device",
+      "type": "string",
+      "title": { "en": "Likely cause", "nl": "Waarschijnlijke oorzaak" },
+      "example": { "en": "Air Conditioning", "nl": "Airconditioning" }
+    },
+    {
+      "name": "reason",
+      "type": "string",
+      "title": { "en": "Why", "nl": "Waarom" },
+      "example": {
+        "en": "Peak caused by Air Conditioning starting while solar yield dropped",
+        "nl": "Piek veroorzaakt doordat Airconditioning startte terwijl de zonneopbrengst daalde"
+      }
+    },
+    {
+      "name": "solar",
+      "type": "number",
+      "title": { "en": "Solar production (W)", "nl": "Zonneproductie (W)" },
+      "example": 820
+    },
+    {
+      "name": "net",
+      "type": "number",
+      "title": { "en": "Net grid power (W)", "nl": "Netto netvermogen (W)" },
+      "example": 3390
+    }
+  ]
+}

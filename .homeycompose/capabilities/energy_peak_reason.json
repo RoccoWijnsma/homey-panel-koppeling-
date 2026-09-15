@@ -1,0 +1,16 @@
+{
+  "type": "string",
+  "title": {
+    "en": "Last peak reason",
+    "nl": "Oorzaak laatste piek"
+  },
+  "desc": {
+    "en": "Human readable explanation of the most recent power peak.",
+    "nl": "Leesbare uitleg van de meest recente vermogenspiek."
+  },
+  "getable": true,
+  "setable": false,
+  "uiComponent": "sensor",
+  "insights": false,
+  "icon": "/assets/capabilities/energy_peak_reason.svg"
+}

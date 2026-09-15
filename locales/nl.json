@@ -1,0 +1,89 @@
+{
+  "app": {
+    "name": "Homey Energy Insights"
+  },
+  "settings": {
+    "title": "Energie-tijdlijn",
+    "subtitle": "Live verbruik, zon en netvermogen met geannoteerde gebeurtenissen",
+    "tabs": {
+      "timeline": "Tijdlijn",
+      "devices": "Apparaten",
+      "settings": "Instellingen"
+    },
+    "stats": {
+      "usage": "Verbruik",
+      "solar": "Zon",
+      "net": "Net",
+      "peakToday": "Piek vandaag",
+      "selfSufficiency": "Zelfvoorziening",
+      "feedIn": "Teruglevering nu"
+    },
+    "range": {
+      "live": "15 min",
+      "hour": "1 uur",
+      "sixHours": "6 uur",
+      "day": "24 uur"
+    },
+    "actions": {
+      "follow": "Live",
+      "addMarker": "Markering",
+      "clearMarkers": "Wis markeringen",
+      "save": "Opslaan",
+      "reset": "Zoom herstellen"
+    },
+    "legend": {
+      "usage": "Verbruik",
+      "solar": "Zon",
+      "net": "Net",
+      "markers": "Events"
+    },
+    "devices": {
+      "role": "Rol",
+      "auto": "Automatisch",
+      "consumer": "Verbruiker",
+      "solar": "Zonneproductie",
+      "grid": "Netmeter",
+      "battery": "Batterij",
+      "ignore": "Negeren",
+      "power": "Vermogen",
+      "empty": "Nog geen apparaten met een vermogensmeter gevonden."
+    },
+    "config": {
+      "peakThreshold": "Piekdrempel (W)",
+      "peakDelta": "Minimale stijging voor een piek (W)",
+      "sampleInterval": "Meetinterval (seconden)",
+      "markerRetention": "Markeringen bewaren (uren)",
+      "trackDeviceSwitches": "Markeringen bij aan/uit van apparaten",
+      "trackSolarEvents": "Markeringen bij zonne-events",
+      "minMarkerPower": "Apparaten negeren onder (W)"
+    },
+    "hint": "Sleep door de historie, scroll of knijp om te zoomen, tik op een markering om te zien waaróm.",
+    "empty": "Gegevens verzamelen… de tijdlijn vult zich zodra je apparaten vermogen rapporteren.",
+    "error": "Kon geen gegevens uit de app laden."
+  },
+  "marker": {
+    "deviceOn": "{device} ingeschakeld",
+    "deviceOff": "{device} uitgeschakeld",
+    "peak": "Vermogenspiek {watts}",
+    "solarPeak": "Piek zonneopbrengst {watts}",
+    "feedInStart": "Teruglevering gestart",
+    "feedInEnd": "Teruglevering gestopt",
+    "solarStart": "Zonneproductie gestart",
+    "solarEnd": "Zonneproductie gestopt",
+    "custom": "{label}"
+  },
+  "reason": {
+    "peakCausedBy": "Piek veroorzaakt door {cause}",
+    "deviceStarting": "{device} startte",
+    "deviceRising": "{device} liep op",
+    "and": " en ",
+    "whileSolarDropped": " terwijl de zonneopbrengst {delta} daalde",
+    "whileSolarRose": " terwijl de zonneopbrengst {delta} steeg",
+    "withoutSolar": " zonder zonneproductie om dit te dekken",
+    "unknown": "Piek van {watts} door apparaten die geen eigen vermogen rapporteren",
+    "unattributed": "Ongemeten verbruik"
+  },
+  "device": {
+    "name": "Energy Insights"
+  }
+}

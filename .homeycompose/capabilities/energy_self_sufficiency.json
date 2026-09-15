@@ -1,0 +1,27 @@
+{
+  "type": "number",
+  "title": {
+    "en": "Self-sufficiency",
+    "nl": "Zelfvoorziening"
+  },
+  "desc": {
+    "en": "Share of the current power usage that is covered by solar production.",
+    "nl": "Deel van het huidige verbruik dat door zonneproductie wordt gedekt."
+  },
+  "units": {
+    "en": "%",
+    "nl": "%"
+  },
+  "min": 0,
+  "max": 100,
+  "decimals": 0,
+  "getable": true,
+  "setable": false,
+  "uiComponent": "sensor",
+  "insights": true,
+  "insightsTitle": {
+    "en": "Self-sufficiency",
+    "nl": "Zelfvoorziening"
+  },
+  "icon": "/assets/capabilities/energy_self_sufficiency.svg"
+}

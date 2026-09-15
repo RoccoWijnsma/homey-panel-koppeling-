@@ -1,0 +1,82 @@
+{
+  "name": {
+    "en": "Energy Insights",
+    "nl": "Energy Insights"
+  },
+  "class": "sensor",
+  "platforms": [
+    "local"
+  ],
+  "capabilities": [
+    "measure_power",
+    "measure_power.consumed",
+    "measure_power.solar",
+    "energy_self_sufficiency",
+    "alarm_generic.peak",
+    "energy_peak_reason"
+  ],
+  "capabilitiesOptions": {
+    "measure_power": {
+      "title": {
+        "en": "Net grid power",
+        "nl": "Netto netvermogen"
+      },
+      "insightsTitle": {
+        "en": "Net grid power",
+        "nl": "Netto netvermogen"
+      }
+    },
+    "measure_power.consumed": {
+      "title": {
+        "en": "Power usage",
+        "nl": "Verbruik"
+      },
+      "insightsTitle": {
+        "en": "Power usage",
+        "nl": "Verbruik"
+      }
+    },
+    "measure_power.solar": {
+      "title": {
+        "en": "Solar production",
+        "nl": "Zonneproductie"
+      },
+      "insightsTitle": {
+        "en": "Solar production",
+        "nl": "Zonneproductie"
+      }
+    },
+    "alarm_generic.peak": {
+      "title": {
+        "en": "Power peak",
+        "nl": "Vermogenspiek"
+      },
+      "insightsTitleTrue": {
+        "en": "Power peak started",
+        "nl": "Vermogenspiek gestart"
+      },
+      "insightsTitleFalse": {
+        "en": "Power peak ended",
+        "nl": "Vermogenspiek beëindigd"
+      }
+    }
+  },
+  "images": {
+    "small": "/drivers/energy-insights/assets/images/small.png",
+    "large": "/drivers/energy-insights/assets/images/large.png",
+    "xlarge": "/drivers/energy-insights/assets/images/xlarge.png"
+  },
+  "pair": [
+    {
+      "id": "list_devices",
+      "template": "list_devices",
+      "navigation": {
+        "next": "add_devices"
+      }
+    },
+    {
+      "id": "add_devices",
+      "template": "add_devices"
+    }
+  ]
+}
